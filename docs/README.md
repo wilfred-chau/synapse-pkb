@@ -9,6 +9,7 @@
 - [progress/dev-log.md](progress/dev-log.md) — 开发日志（活跃卷）
 - [bugs/BUGFIX_LOG.md](bugs/BUGFIX_LOG.md) — 缺陷修复记录（活跃卷）
 - [overview/architecture-snapshot.md](overview/architecture-snapshot.md) — 系统全貌
+- [design/new-session-prompting-guide.md](design/new-session-prompting-guide.md) — 新会话提示词指南（开发 / 修 bug / 整理文档）
 - [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) — 部署与运维手册
 - [deploy/server-inventory.md](deploy/server-inventory.md) — 服务器登录信息、已安装服务与端口盘点（敏感）
 - [requirements/requirements-full.md](requirements/requirements-full.md) — 需求规格说明书 Markdown 快照
