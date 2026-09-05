@@ -295,3 +295,63 @@ _(暂无轮转卷)_
 
 **遗留/Next**：
 - 后续继续观察实际使用中，agent 对自然表达任务的模式判断是否稳定
+
+## 2026-09-05｜实现 A1 单用户认证与个人空间最小闭环
+
+**背景**：用户要求按需求文档开始开发 A1 模块。经 `doc-pilot` 开工读取与 `plan-before-code` 方案确认后，决定本次只交付 A1 的最小闭环：单用户 JWT 本地登录、个人空间基础展示，以及可承接后续 `user_id` 过滤的数据库基线，不把 A2-A5 范围提前混入。
+
+**产出**：
+- 创建 Jira ticket `SPKB-2`
+- 后端新增 Spring Security + JWT 鉴权链路
+- 新增 `/api/auth/login` 与 `/api/auth/me` 接口
+- 新增 `pkb_users` 表的 Flyway 迁移脚本、JPA 实体、仓库与启动期单用户初始化逻辑
+- 前端新增登录页、token 持久化、受保护应用壳与个人空间展示
+- 补充后端鉴权集成测试与前端构建验证
+- 为 `plan-before-code` 新增本地方案目录约束，并把本次方案落到 `docs/plans-local/2026-09-05-a1-auth-foundation/`
+
+**过程要点（踩坑与决策）**：
+- A1 的“数据库预留多用户迁移路径”本次收敛为先建立 `pkb_users` 基线，不提前创建 `entries` 等业务表，避免需求越界
+- 登录账号改为本地配置驱动，启动时同步到数据库，保证当前单用户模式可用，同时保留后续扩展空间
+- Maven 测试命令需显式指向仓库根 `settings.xml`，否则会误走 `backend/settings.xml` 的相对路径而失败
+- Spring Security 默认会把未认证访问返回为 `403` 且启用默认内存用户，需要显式关闭默认用户配置并改为 `401` 入口响应
+
+**验证**：
+- `mvn -s "f:\synapse-pkb\settings.xml" test`
+- `npm run build`
+- 在 CentOS 服务器本地启动 A1 后端，连接 `synapse_pkb` 执行 Flyway 迁移
+- 在 CentOS 服务器本地导入种子 SQL：`backend/src/main/resources/db/seed/A1__seed_pkb_users.sql`
+- 远程校验 `flyway_schema_history` 与 `pkb_users` 数据已落库
+- 调用 `http://192.168.106.130:18081/api/auth/login` 验证种子用户 `pkb-admin / Password123!` 可成功登录
+
+**遗留/Next**：
+- 后续在 A2/A5 的业务表中补齐 `user_id` 字段、索引和按当前用户过滤查询
+- 为运行时环境补齐 `DB_URL`、`DB_USERNAME`、`DB_PASSWORD`、`APP_JWT_SECRET`、`APP_BOOTSTRAP_*` 配置
+
+## 2026-09-06｜补齐 IDEA 直启后端的本地配置与强制自检约束
+
+**背景**：用户明确要求后续所有改码任务都必须完成本地编译和前后端服务启动自检；同时，希望在 Windows 的 IDEA 中直接启动后端时，就能连接 CentOS 上的 PostgreSQL，而不是每次手动补环境变量。
+
+**产出**：
+- 在 `CLAUDE.md` 中新增“改码后的本地强制自检”约束
+- 后端配置改为可自动导入仓库根或 `backend/` 下的 `.env.local`
+- 新增 `.env.example`，列出 Jira、数据库、JWT 与 bootstrap 用户所需键名模板
+- 本地 `.env.local` 已补齐后端启动所需配置（仅本地生效，不入库）
+
+**过程要点（踩坑与决策）**：
+- 当前后端原本只依赖环境变量占位符，IDEA 若未单独配置 Run Configuration 环境变量则无法直接启动
+- 采用 `spring.config.import` 读取 `.env.local`，既保留敏感信息本地化，也避免把凭据写进可提交配置文件
+- `.gitignore` 已排除 `.env.local`，因此真实数据库凭据不会进入远程仓库；而 `.env.example` 只保留占位模板，方便本地配置对齐
+
+**验证**：
+- `mvn -pl backend test`
+- `npm run build`
+- `mvn -pl backend spring-boot:run` 可在本地直接启动，并成功连接 `192.168.106.130:5432/synapse_pkb`
+- `GET http://localhost:8080/actuator/health` 返回 `UP`
+- `POST http://localhost:8080/api/auth/login` 使用 `pkb-admin` 成功返回 token
+- `npm run dev -- --host 127.0.0.1`
+- `GET http://127.0.0.1:5173` 返回 `200`
+- `POST http://127.0.0.1:5173/api/auth/login` 通过 Vite 代理成功联调后端
+
+**遗留/Next**：
+- 若后续新增更多本地运行配置项，优先同步补充到 `.env.example`
+- 后续可再补一份 IDEA Run Configuration 使用说明，方便本地新环境快速恢复
