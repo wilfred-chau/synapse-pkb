@@ -6,7 +6,7 @@ description: "Creates a Jira ticket before development or bug-fix work starts. I
 # dev-with-ticket
 
 这个 skill 用于把 **Jira 建票** 接到当前项目的开发流程里。它的职责不是替代 `doc-pilot`，而是作为
-开发前置门：**先建 ticket，拿到编号并让用户确认，再开始实际开发**。
+在 `doc-pilot` 值守下的开发前置门：**先建 ticket，拿到编号并让用户确认，再开始实际开发**。
 
 ## 触发时机
 
@@ -23,16 +23,18 @@ description: "Creates a Jira ticket before development or bug-fix work starts. I
 - 只整理文档、只盘点结构、只做环境只读检查
 - 用户明确说这次不需要建票
 
-## 与 doc-pilot 的配合顺序
+## 与 doc-pilot / plan-before-code 的配合关系
 
 如果任务本身属于开发 / 修复：
 
 1. 先按 `doc-pilot` 的开工读取路由读取 `docs/` 必要文档
-2. 再用本 skill 创建 Jira ticket
-3. 把 ticket 编号回报给用户确认
-4. **只有用户确认无误后**，才开始实际开发
-5. 收工时继续按 `doc-pilot` 回写 `STATUS.md`、`dev-log.md` 等文档
-6. commit message 草案需带 ticket 编号前缀，如 `[SPKB-1] fix xxx`
+2. 若任务属于中大型开发或复杂 bug，且已启用 `plan-before-code`，则先在 `doc-pilot` 值守下完成方案确认
+3. 再用本 skill 创建 Jira ticket
+4. 若前面经过了 `plan-before-code`，优先使用**已确认方案摘要**作为 Jira Description
+5. 把 ticket 编号回报给用户确认
+6. **只有用户确认无误后**，才开始实际开发
+7. 收工时继续按 `doc-pilot` 回写 `STATUS.md`、`dev-log.md` 等文档
+8. commit message 草案需带 ticket 编号前缀，如 `[SPKB-1] fix xxx`
 
 如果 `docs/.doc-pilot.json` 已启用 `ticket_system.enabled = true`，则本 skill 同时作为
 `doc-pilot` 的前置建票门实现。
@@ -77,6 +79,16 @@ powershell -ExecutionPolicy Bypass -File ".trae/skills/dev-with-ticket/scripts/c
   -ProjectKey SPKB
 ```
 
+若标题或描述包含中文，优先使用 UTF-8 文件输入，避免命令行参数编码把中文变成 `??`：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File ".trae/skills/dev-with-ticket/scripts/create-jira-issue.ps1" `
+  -SummaryFile ".tmp/jira-summary.txt" `
+  -DescriptionFile ".tmp/jira-description.txt" `
+  -IssueType task `
+  -ProjectKey SPKB
+```
+
 ## 标题与描述生成规则
 
 - 标题短而明确，直接概括本次任务目标
@@ -84,6 +96,7 @@ powershell -ExecutionPolicy Bypass -File ".trae/skills/dev-with-ticket/scripts/c
   - 背景 / 用户诉求
   - 预期修改范围
   - 若是 bug，补充现象与影响
+  - 若已有 `plan-before-code` 方案，优先用该方案摘要作为描述主体
 - 不编造验收结果，不提前写“已完成”
 
 ## 回报格式

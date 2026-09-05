@@ -15,6 +15,7 @@
 
 ## 最近动态（新→旧，最多 8 条）
 
+- **2026-09-05**：已将 `plan-before-code` 接入项目规则，并修复 Jira 建票中文标题显示为 `??` 的编码问题。
 - **2026-09-05**：已完成 Jira Cloud 项目 `synapse-pkb`（Key：`SPKB`）创建，并接入 `dev-with-ticket` 开发前置建票 skill。
 - **2026-09-05**：已在 CentOS PostgreSQL 16 上创建项目数据库 `synapse_pkb`，并完成连接验证。
 - **2026-09-05**：完成根聚合 Maven 工程、Spring Boot 后端骨架、React + Vite 前端骨架搭建，并验证后端 `mvn clean verify -DskipTests` 与前端 `npm run build` 通过。

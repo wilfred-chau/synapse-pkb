@@ -1,9 +1,11 @@
 param(
-    [Parameter(Mandatory = $true)]
     [string]$Summary,
 
-    [Parameter(Mandatory = $true)]
     [string]$Description,
+
+    [string]$SummaryFile,
+
+    [string]$DescriptionFile,
 
     [ValidateSet('task', 'bug')]
     [string]$IssueType = 'task',
@@ -15,6 +17,30 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::UTF8
+
+if ($SummaryFile) {
+    if (-not (Test-Path $SummaryFile)) {
+        throw "Summary file not found: $SummaryFile"
+    }
+    $Summary = Get-Content -Raw -Encoding UTF8 $SummaryFile
+}
+
+if ($DescriptionFile) {
+    if (-not (Test-Path $DescriptionFile)) {
+        throw "Description file not found: $DescriptionFile"
+    }
+    $Description = Get-Content -Raw -Encoding UTF8 $DescriptionFile
+}
+
+if ([string]::IsNullOrWhiteSpace($Summary)) {
+    throw "Summary is required. Provide -Summary or -SummaryFile."
+}
+
+if ([string]::IsNullOrWhiteSpace($Description)) {
+    throw "Description is required. Provide -Description or -DescriptionFile."
+}
 
 if (-not (Test-Path $ConfigPath)) {
     throw "Jira config file not found: $ConfigPath"

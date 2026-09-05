@@ -218,3 +218,28 @@ _(暂无轮转卷)_
 **遗留/Next**：
 - 后续所有开发 / 修复任务，先走 `dev-with-ticket` 建票，再进入实际开发
 - commit message 草案统一带 `[SPKB-N]` 前缀
+
+## 2026-09-05｜接入 plan-before-code 并修复 Jira 中文建票编码
+
+**背景**：新引入了 `plan-before-code` 作为中大型任务的方案确认环节，需要把它正确接入现有 `doc-pilot` / `dev-with-ticket` 体系；同时，Jira 验证票在看板中出现中文标题显示为 `??` 的问题，需要尽快修复，否则后续建票可读性会持续受影响。
+
+**产出**：
+- 新 skill `plan-before-code` 已纳入项目规则
+- `CLAUDE.md` 已明确三者是“`doc-pilot` 全程值守 + 其他 skill 在其值守范围内工作”的嵌套关系
+- `dev-with-ticket` skill 已补充与 `plan-before-code` 的协作边界
+- `create-jira-issue.ps1` 已增加 UTF-8 文件输入能力：`-SummaryFile` / `-DescriptionFile`
+- 现有 Jira 验证票 `SPKB-1` 的中文标题已修正
+- 在 `BUGFIX_LOG.md` 中登记 Jira 中文乱码问题及修复方法
+
+**过程要点（踩坑与决策）**：
+- `plan-before-code` 没有被定义成脱离 `doc-pilot` 的独立流水线，而是被定义成 `doc-pilot` 值守下的中间环节
+- Jira 的 `??` 不是页面渲染问题，而是建票时文本在进入脚本前就被命令行参数编码链路损坏
+- 单纯在 PowerShell 里构造正确的 Unicode 字符串还不够，发请求时也需要显式用 UTF-8 字节体，才能真正写回正确标题
+
+**验证**：
+- 通过 Jira API 再次读取 `SPKB-1`，summary 已返回正确中文
+- `dev-with-ticket` 脚本已具备不依赖命令行中文参数的安全输入方式
+
+**遗留/Next**：
+- 后续凡是 Jira 标题或描述包含中文，优先使用 UTF-8 文件输入模式
+- 中大型任务先由 `plan-before-code` 输出方案，再交由 `dev-with-ticket` 建票

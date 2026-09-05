@@ -41,9 +41,9 @@
 
 ### 3.2 首次使用 doc-pilot 的特殊约束
 
-当前仓库尚未初始化 doc-pilot 知识库（`docs/.doc-pilot.json` 不存在）。
+当前仓库已初始化 doc-pilot 知识库，`docs/.doc-pilot.json` 已存在。
 
-因此第一次正式触发 doc-pilot 时，必须先走“模式 C：初始化知识库”，再继续原任务，不允许假设 `docs/` 已经存在。
+因此后续触发 doc-pilot 时，直接按常规值守路由执行即可，不再重复走“模式 C：初始化知识库”。
 
 ### 3.3 开工前固定动作
 
@@ -51,9 +51,17 @@
 
 1. 若仓库已进入 doc-pilot 管理态，先按其规则检查分支同步状态。
 2. 读取知识库入口文档后再动手，不先写代码后补读文档。
-3. 修 bug 前先检索历史 bug 记录，避免重复踩坑。
+3. 若任务属于中大型开发或复杂 bug，且实现路径仍需对齐，先在 doc-pilot 值守下触发 `plan-before-code` 生成并确认方案，再进入建票或开发。
+4. 修 bug 前先检索历史 bug 记录，避免重复踩坑。
 
-### 3.4 收工后固定动作
+### 3.4 skill 协作关系
+
+- `doc-pilot` 是全程值守角色，负责项目上下文持续读取、规范监督与状态回写，不是一次性动作。
+- `plan-before-code` 在 `doc-pilot` 值守下工作，负责把中大型需求转化为可确认方案。
+- `dev-with-ticket` 在 `doc-pilot` 值守下工作，负责基于需求或已确认方案创建 Jira ticket，并在用户确认后进入开发。
+- 若任务先经过 `plan-before-code`，则 Jira ticket 的 Description 优先使用方案摘要，而不是直接复用原始需求文本。
+
+### 3.5 收工后固定动作
 
 完成开发或修复后，必须：
 
@@ -121,6 +129,7 @@
 - 当前 `docs/` 知识库已初始化，并由 `docs/.doc-pilot.json` 管理
 - 当前根目录仍保留需求文档原件与其 Markdown 快照
 - 本项目已配置 Jira Cloud 站点 `wilfredchau.atlassian.net`，项目 Key 为 `SPKB`
+- 当前中大型任务方案 skill 为 `.trae/skills/plan-before-code/SKILL.md`
 - 当前开发前置建票 skill 为 `.trae/skills/dev-with-ticket/SKILL.md`
 
 如后续项目结构、值守 skill 路径或流程发生变化，应优先更新本文件。
