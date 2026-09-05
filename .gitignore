@@ -8,7 +8,9 @@ Thumbs.db
 *.iml
 
 # Local AI tooling
-.trae/
+.trae/*
+!.trae/skills/
+!.trae/skills/**
 
 # Java / Spring Boot
 target/
@@ -26,6 +28,9 @@ dist/
 coverage/
 .npm/
 .pnpm-store/
+*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
 
 # Environment and secrets
 .env
@@ -34,9 +39,6 @@ coverage/
 
 # Sensitive local project docs
 docs/deploy/server-inventory.md
-docs/deploy/DEPLOYMENT.md
-docs/progress/STATUS.md
-docs/progress/dev-log.md
 
 # Archives / temporary files
 *.zip

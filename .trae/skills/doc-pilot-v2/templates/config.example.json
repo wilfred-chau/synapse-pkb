@@ -1,0 +1,43 @@
+{
+  "_comment": "doc-pilot 配置文件示例。真实配置由 scripts/init-kb.py 在目标项目里生成于 docs/.doc-pilot.json，本文件仅供参考各字段含义，不要直接复制到项目里。",
+
+  "project_name": "my-project",
+
+  "docs_root": "docs",
+
+  "docs_language": "zh",
+
+  "vcs": "git",
+
+  "commit_message": {
+    "language": "en",
+    "conventional_commits": true
+  },
+
+  "ticket_system": {
+    "_comment": "若项目有独立的工单/需求票 skill（如 Jira/Linear 建票流程），在这里登记；enabled=false 时 doc-pilot 完全跳过建票门相关的路由和检查单条目。",
+    "enabled": false,
+    "prefix": "",
+    "gate_skill_path": ""
+  },
+
+  "requirements_source": {
+    "_comment": "若项目把需求原文维护为 docx 并需要机器转换为可检索的 md 副本，设为 enabled=true，check-docs.py 会校验 md 副本是否比 docx 新。",
+    "enabled": false,
+    "format": ""
+  },
+
+  "capacity_limits": {
+    "_comment": "以下均为默认阈值，可按项目规模调整；check-docs.py 会读取这里的数值而不是硬编码。",
+    "dev_log_warn_lines": 1500,
+    "dev_log_error_lines": 2000,
+    "bugfix_log_max_lines": 1000,
+    "bugfix_log_max_entries": 40,
+    "status_max_lines": 150,
+    "architecture_warn_lines": 400
+  },
+
+  "root_whitelist": ["README.md"],
+
+  "created": "YYYY-MM-DD"
+}
