@@ -7,6 +7,8 @@ import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
 import com.wilfredchau.synapsepkb.security.JwtService;
 import com.wilfredchau.synapsepkb.user.PkbUser;
 import com.wilfredchau.synapsepkb.user.PkbUserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final PkbUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,6 +38,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            log.debug("Login rejected for user {}", request.username());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
 
@@ -43,6 +48,7 @@ public class AuthService {
                 user.getDisplayName(),
                 user.getSpaceKey());
 
+        log.debug("Login succeeded for user {}", authenticatedUser.username());
         return new AuthResponse(jwtService.generateToken(authenticatedUser), toCurrentUser(authenticatedUser));
     }
 

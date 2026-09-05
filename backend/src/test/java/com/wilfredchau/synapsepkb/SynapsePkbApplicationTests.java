@@ -40,9 +40,11 @@ class SynapsePkbApplicationTests {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                .andExpect(jsonPath("$.user.username").value("pkb-admin"))
-                .andExpect(jsonPath("$.user.spaceKey").value("personal-space"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.requestId").isNotEmpty())
+                .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.data.user.username").value("pkb-admin"))
+                .andExpect(jsonPath("$.data.user.spaceKey").value("personal-space"));
     }
 
     @Test
@@ -55,13 +57,34 @@ class SynapsePkbApplicationTests {
                                   "password": "wrong-password"
                                 }
                                 """))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.error.message").value("Invalid username or password"));
+    }
+
+    @Test
+    void loginShouldRejectBlankUsername() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username": "",
+                                  "password": "Password123!"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.error.details.fieldErrors.username").value("username is required"));
     }
 
     @Test
     void meShouldRequireAuthentication() throws Exception {
         mockMvc.perform(get("/api/auth/me"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
     }
 
     @Test
@@ -78,12 +101,14 @@ class SynapsePkbApplicationTests {
                 .andReturn();
 
         JsonNode jsonNode = objectMapper.readTree(loginResult.getResponse().getContentAsString());
-        String accessToken = jsonNode.get("accessToken").asText();
+        String accessToken = jsonNode.path("data").path("accessToken").asText();
 
         mockMvc.perform(get("/api/auth/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.displayName").value("Wilfred"))
-                .andExpect(jsonPath("$.spaceKey").value("personal-space"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.requestId").isNotEmpty())
+                .andExpect(jsonPath("$.data.displayName").value("Wilfred"))
+                .andExpect(jsonPath("$.data.spaceKey").value("personal-space"));
     }
 }

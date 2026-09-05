@@ -3,7 +3,7 @@
 > AI 开发值守必读入口。上接 [../README.md](../README.md)，细节见 [dev-log.md](dev-log.md)。
 > last-updated 隐藏标记供 check-docs.py 校验新鲜度，更新正文日期时必须同步改。
 
-<!-- last-updated: 2026-09-05 -->
+<!-- last-updated: 2026-09-06 -->
 
 ## 模块进度总览
 
@@ -15,6 +15,7 @@
 
 ## 最近动态（新→旧，最多 8 条）
 
+- **2026-09-06**：已完成一轮公共能力加固并创建 Jira `SPKB-5`：后端补齐统一 `ApiResponse` 契约、全局异常处理与 requestId 请求链路日志；前端补齐统一 API 调用层、401 处理与开发态请求/响应日志；本地后端测试、前端构建和前后端启动联调均通过。
 - **2026-09-06**：已修复 `dev-with-ticket` 的 Jira 中文乱码：`create-jira-issue.ps1` 改为以 UTF-8 字节流发送 JSON 请求体并显式声明 `charset=utf-8`；已创建中文验证票 `SPKB-3` 与重建后的 A1 工单 `SPKB-4`，损坏的 `SPKB-2` 已标记作废并关闭。
 - **2026-09-06**：已补齐本地启动配置：后端支持自动导入 `.env.local`，在 Windows 本地可直接启动并连接 CentOS PostgreSQL；同时新增 `.env.example` 并将“改码后必须本地编译 + 前后端启动自检”固化为项目强约束。
 - **2026-09-05**：已完成 A1 模块最小闭环，并在 CentOS 服务器本地完成 `synapse_pkb` 的 Flyway 落库、种子数据导入与登录链路验证：后端新增单用户 JWT 登录、`/api/auth/me`、`pkb_users` 数据库基线；前端新增登录页、登录态持久化与个人空间壳；关联 Jira ticket `SPKB-2`。
@@ -34,6 +35,7 @@
 
 - [ ] 组织相关开发人员审核《新会话提示词指南》，收集反馈并完成首轮修订
 - [ ] 输出首版 PKB 部署目录与 Compose 方案
+- [ ] 将统一 API 契约、异常处理与请求日志规范继续沿用到后续 A2-A5 业务接口
 - [ ] 在 A2/A5 后续任务中，为业务表补齐 `user_id` 字段、索引与查询过滤
 - [ ] 为 `synapse_pkb` 数据库初始化后续业务表结构与 `vector` 扩展
 - [ ] 在后续开发任务中启用 Jira 建票前置门，统一使用 `SPKB-*` ticket 编号

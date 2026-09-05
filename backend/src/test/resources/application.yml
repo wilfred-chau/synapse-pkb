@@ -23,3 +23,9 @@ app:
       password: Password123!
       display-name: Wilfred
       space-key: personal-space
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+  level:
+    com.wilfredchau.synapsepkb: DEBUG

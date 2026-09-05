@@ -45,3 +45,9 @@ info:
   app:
     name: Synapse PKB Backend
     stage: module-a1
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+  level:
+    com.wilfredchau.synapsepkb: ${APP_LOG_LEVEL:DEBUG}

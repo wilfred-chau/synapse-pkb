@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Descriptions, Layout, Space, Spin, Tag, Typography } from 'antd';
-import { AxiosError } from 'axios';
 import LoginPage from './LoginPage';
+import { ApiClientError } from './api';
 import { fetchCurrentUser, hasStoredToken, login, logout, type CurrentUser } from './auth';
 
 const { Content, Header } = Layout;
@@ -29,6 +29,19 @@ function App() {
       .finally(() => {
         setInitializing(false);
       });
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      logout();
+      setCurrentUser(null);
+      setErrorMessage('登录状态已失效，请重新登录。');
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
   }, []);
 
   const handleLogin = async (values: { username: string; password: string }) => {
@@ -120,14 +133,13 @@ function App() {
 }
 
 function resolveErrorMessage(error: unknown) {
-  if (error instanceof AxiosError) {
-    if (error.response?.status === 401) {
+  if (error instanceof ApiClientError) {
+    if (error.status === 401) {
       return '用户名或密码不正确。';
     }
 
-    const message = error.response?.data?.message;
-    if (typeof message === 'string' && message.trim()) {
-      return message;
+    if (error.message.trim()) {
+      return error.message;
     }
   }
 

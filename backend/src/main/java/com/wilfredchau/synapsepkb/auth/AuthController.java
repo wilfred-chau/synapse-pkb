@@ -3,6 +3,9 @@ package com.wilfredchau.synapsepkb.auth;
 import com.wilfredchau.synapsepkb.auth.dto.AuthResponse;
 import com.wilfredchau.synapsepkb.auth.dto.CurrentUserResponse;
 import com.wilfredchau.synapsepkb.auth.dto.LoginRequest;
+import com.wilfredchau.synapsepkb.common.api.ApiResponse;
+import com.wilfredchau.synapsepkb.common.logging.RequestTracing;
+import jakarta.servlet.http.HttpServletRequest;
 import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,12 +26,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
+        return ApiResponse.success(
+                authService.login(request),
+                getRequestId(httpServletRequest));
     }
 
     @GetMapping("/me")
-    public CurrentUserResponse me(@AuthenticationPrincipal AuthenticatedUser currentUser) {
-        return authService.me(currentUser);
+    public ApiResponse<CurrentUserResponse> me(
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            HttpServletRequest httpServletRequest) {
+        return ApiResponse.success(
+                authService.me(currentUser),
+                getRequestId(httpServletRequest));
+    }
+
+    private String getRequestId(HttpServletRequest request) {
+        return (String) request.getAttribute(RequestTracing.REQUEST_ID_ATTRIBUTE);
     }
 }
