@@ -99,6 +99,8 @@ def check_index(docs, rpt):
             rel = os.path.relpath(full, docs).replace(os.sep, "/")
             if rel == "README.md":
                 continue
+            if rel.startswith("plans-local/"):
+                continue
             if rel not in index:
                 rpt.error("INDEX MISS: docs/%s not registered in docs/README.md" % rel)
 

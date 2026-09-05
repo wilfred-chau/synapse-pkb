@@ -1,67 +1,137 @@
-import { Card, Col, Layout, Row, Space, Tag, Typography } from 'antd';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Card, Descriptions, Layout, Space, Spin, Tag, Typography } from 'antd';
+import { AxiosError } from 'axios';
+import LoginPage from './LoginPage';
+import { fetchCurrentUser, hasStoredToken, login, logout, type CurrentUser } from './auth';
 
 const { Content, Header } = Layout;
-const { Paragraph, Title, Text } = Typography;
-
-const cards = [
-  {
-    title: 'Backend',
-    description: 'Spring Boot 3 skeleton is prepared for future module-based development.',
-    tag: 'Java 17'
-  },
-  {
-    title: 'Frontend',
-    description: 'React 18 + TypeScript + Ant Design shell is ready for incremental pages.',
-    tag: 'Vite'
-  },
-  {
-    title: 'Current Scope',
-    description: 'Only project scaffolding is in place. No business modules or APIs are implemented yet.',
-    tag: 'Skeleton'
-  }
-];
+const { Paragraph, Text, Title } = Typography;
 
 function App() {
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [initializing, setInitializing] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasStoredToken()) {
+      setInitializing(false);
+      return;
+    }
+
+    fetchCurrentUser()
+      .then((user) => {
+        setCurrentUser(user);
+      })
+      .catch(() => {
+        logout();
+      })
+      .finally(() => {
+        setInitializing(false);
+      });
+  }, []);
+
+  const handleLogin = async (values: { username: string; password: string }) => {
+    setSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const user = await login(values.username, values.password);
+      setCurrentUser(user);
+    } catch (error) {
+      logout();
+      setCurrentUser(null);
+      setErrorMessage(resolveErrorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null);
+    setErrorMessage(null);
+  };
+
+  if (initializing) {
+    return (
+      <Layout style={{ minHeight: '100vh', background: '#f5f7fa' }}>
+        <Content style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Space direction="vertical" align="center">
+            <Spin size="large" />
+            <Text type="secondary">正在恢复登录态...</Text>
+          </Space>
+        </Content>
+      </Layout>
+    );
+  }
+
+  if (!currentUser) {
+    return <LoginPage submitting={submitting} errorMessage={errorMessage} onSubmit={handleLogin} />;
+  }
+
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fa' }}>
-      <Header style={{ display: 'flex', alignItems: 'center', background: '#101828' }}>
+      <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#101828' }}>
         <Space size="middle">
           <Title level={3} style={{ margin: 0, color: '#fff' }}>
             Synapse PKB
           </Title>
-          <Tag color="blue">Dev Skeleton</Tag>
+          <Tag color="blue">A1 Ready</Tag>
         </Space>
+        <Button onClick={handleLogout}>退出登录</Button>
       </Header>
       <Content style={{ padding: 32 }}>
         <Space direction="vertical" size={24} style={{ width: '100%' }}>
           <div>
-            <Title level={2}>项目骨架已初始化</Title>
-            <Paragraph type="secondary">
-              当前阶段只落基础设施，不实现任何业务需求。后续可以在这个壳子上继续逐模块推进。
+            <Title level={2}>个人空间</Title>
+            <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+              当前已完成 A1 的单用户认证闭环，后续业务查询会基于该用户上下文继续扩展。
             </Paragraph>
           </div>
 
-          <Row gutter={[16, 16]}>
-            {cards.map((card) => (
-              <Col xs={24} md={8} key={card.title}>
-                <Card title={card.title} extra={<Tag>{card.tag}</Tag>} style={{ height: '100%' }}>
-                  <Paragraph style={{ marginBottom: 0 }}>{card.description}</Paragraph>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+          <Card title="当前登录用户">
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="用户 ID">{currentUser.id}</Descriptions.Item>
+              <Descriptions.Item label="用户名">{currentUser.username}</Descriptions.Item>
+              <Descriptions.Item label="显示名称">{currentUser.displayName}</Descriptions.Item>
+              <Descriptions.Item label="空间标识">{currentUser.spaceKey}</Descriptions.Item>
+            </Descriptions>
+          </Card>
 
-          <Card title="下一步建议">
+          <Alert
+            type="info"
+            showIcon
+            message="数据库基线已预留"
+            description="A1 已引入用户表和固定 user 上下文，后续 entries、relations 等业务表落地时将按该基线补齐 user_id 字段与索引。"
+          />
+
+          <Card title="下一步衔接">
             <Space direction="vertical" size={8}>
-              <Text>1. 在 backend 中补充分层目录与统一返回结构。</Text>
-              <Text>2. 在 frontend 中补充路由、布局壳和 API 基础封装。</Text>
-              <Text>3. 再进入模块 A 的最小闭环实现。</Text>
+              <Text>1. 在 A2/A5 阶段为业务表补齐 user_id 字段与索引。</Text>
+              <Text>2. 在统一录入与 CRUD 模块里接入当前用户过滤。</Text>
+              <Text>3. 后续可在不推翻 A1 的前提下扩展为多用户模式。</Text>
             </Space>
           </Card>
         </Space>
       </Content>
     </Layout>
   );
+}
+
+function resolveErrorMessage(error: unknown) {
+  if (error instanceof AxiosError) {
+    if (error.response?.status === 401) {
+      return '用户名或密码不正确。';
+    }
+
+    const message = error.response?.data?.message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+
+  return '登录失败，请稍后重试。';
 }
 
 export default App;

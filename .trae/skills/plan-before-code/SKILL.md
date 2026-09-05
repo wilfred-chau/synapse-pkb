@@ -52,6 +52,18 @@ description: "Turns medium-to-large development requests into a confirmable impl
 
 不要把本 skill 理解为“替代文档阅读”或“替代建票”，它只负责**需求到方案的转化与确认**。
 
+## 本地方案落盘要求
+
+凡是实际触发了本 skill 的任务，在向用户展示方案前，必须先把方案落到 `docs/plans-local/` 下的独立任务目录中。
+
+- 目录建议：`docs/plans-local/<yyyy-mm-dd>-<topic>/`
+- 最少文件：
+  - `plan.md`：需求理解、范围、实现步骤、风险与决策
+  - `checklist.md`：按执行顺序拆开的任务清单
+- 该目录只用于本地协作和会话沉淀，**永远不需要上传到代码仓库**
+- 若仓库尚未忽略 `docs/plans-local/`，需先补 `.gitignore`
+- Jira ticket 创建后，可回写 ticket 编号到上述文件，保证方案、工单、实现三者可串联
+
 ## 执行流程
 
 ### 1. 基于 doc-pilot 上下文生成方案
@@ -77,6 +89,7 @@ description: "Turns medium-to-large development requests into a confirmable impl
 方案输出后必须：
 
 - 明确告诉用户：**先确认方案，再建票，再开发**
+- 展示给用户的方案内容应与 `docs/plans-local/.../plan.md` 保持一致
 - 等待用户确认或修改意见
 - 未经确认，不进入 `dev-with-ticket`
 - 不因为用户说“继续”就默认方案已确认，除非上下文明确表达认可

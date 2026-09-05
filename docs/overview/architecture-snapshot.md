@@ -6,7 +6,7 @@
 
 - 后端：Java 17 + Spring Boot 3
 - 前端：React 18 + TypeScript + Ant Design 5
-- 数据层：PostgreSQL 16（规划安装，需启用 pgvector）+ Redis
+- 数据层：PostgreSQL 16 + Flyway（已用于 A1 用户表基线）；Redis 与 pgvector 后续接入
 - AI 能力：GLM Embedding / Chat 双接口（后续接入）
 - 部署：Docker + Docker Compose + Nginx 反向代理
 - 当前服务器基线：CentOS Stream 9（`192.168.106.130`）
@@ -22,7 +22,7 @@
 
 ## 横切机制
 
-- 鉴权 / 权限：单用户模式，采用 JWT 本地登录；数据库层预留 `user_id` 但一期所有查询按固定单用户处理。
+- 鉴权 / 权限：A1 已落地单用户模式的 JWT 本地登录，后端提供 `/api/auth/login` 与 `/api/auth/me`；前端已具备登录页、token 持久化和受保护应用壳。数据库当前已建立 `pkb_users` 作为单用户基线，后续业务表按该用户上下文补齐 `user_id` 字段与索引。
 - 日志 / 审计：后续通过 `operation_logs` 记录条目编辑、删除、关联确认等关键行为；部署与服务变更单独记录在 `../deploy/server-inventory.md` 与 `../deploy/DEPLOYMENT.md`。
 - 任务调度：关联计算与批量任务走 `Spring @Scheduled + Redis`，避免阻塞录入链路。
 - 部署约定：目标环境为单机 CentOS Stream 9；当前已确认可复用 Java 17、Maven、Node 18、Redis、Nginx、MySQL、Jenkins、Nacos，且已补齐 Docker Engine / Docker Compose / PostgreSQL 16 / pgvector / python3-pip。
