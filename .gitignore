@@ -34,6 +34,7 @@ frontend/vite.config.d.ts
 
 # Environment and secrets
 .env
+.env.local
 .env.*
 !.env.example
 

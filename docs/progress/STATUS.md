@@ -15,6 +15,7 @@
 
 ## 最近动态（新→旧，最多 8 条）
 
+- **2026-09-05**：已完成 Jira Cloud 项目 `synapse-pkb`（Key：`SPKB`）创建，并接入 `dev-with-ticket` 开发前置建票 skill。
 - **2026-09-05**：已在 CentOS PostgreSQL 16 上创建项目数据库 `synapse_pkb`，并完成连接验证。
 - **2026-09-05**：完成根聚合 Maven 工程、Spring Boot 后端骨架、React + Vite 前端骨架搭建，并验证后端 `mvn clean verify -DskipTests` 与前端 `npm run build` 通过。
 - **2026-09-05**：已开放 PostgreSQL `192.168.106.130:5432` 并启用白名单访问控制，本机 TCP 连通性验证通过。
@@ -27,6 +28,7 @@
 
 - [ ] 输出首版 PKB 部署目录与 Compose 方案
 - [ ] 为 `synapse_pkb` 数据库初始化业务表结构与 `vector` 扩展
+- [ ] 在后续开发任务中启用 Jira 建票前置门，统一使用 `SPKB-*` ticket 编号
 - [ ] 为 backend 补充分层包结构、统一异常与配置基线
 - [ ] 为 frontend 补充路由、布局壳与 API 调用规范
 - [ ] 开始 Phase 1 的基础平台最小闭环实现

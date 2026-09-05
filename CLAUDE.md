@@ -61,6 +61,7 @@
 2. 刷新 `STATUS.md`。
 3. 若架构或横切机制变化，更新架构快照。
 4. 在汇报中提供可直接粘贴的 commit message 草案，并列出本次建议 `git add` 的文件清单，但不代执行 git add / commit / push。
+5. 若任务已通过 Jira 建票，commit message 草案需带 ticket 编号前缀（如 `[SPKB-1] feat xxx`）。
 
 ## 4. 文档与知识库原则
 
@@ -91,7 +92,7 @@
 - 非必要不追问；能做合理假设时直接推进，并在结果中说明假设。
 - 当存在非显然后果的方案分叉时，再暂停与用户确认。
 - 不替用户执行 git add / commit / push，除非用户明确要求。
-- 每次代码改动完成后，都要附上英文 commit message 草案，并列出本次建议 `git add` 的文件清单。
+- 每次代码改动完成后，都要附上英文 commit message 草案，并列出本次建议 `git add` 的文件清单；若已有 Jira ticket，commit message 需带 ticket 编号前缀。
 - 保持行动优先：不要在没有阻断证据时反复推翻已选技术路径。
 
 ## 8. 执行风格：拒绝过度思考，行动优先
@@ -117,8 +118,9 @@
 ## 10. 本项目当前已知事实
 
 - `doc-pilot` skill 已解压到 `.trae/skills/doc-pilot-v2/`
-- 当前尚未初始化 `docs/` 知识库
+- 当前 `docs/` 知识库已初始化，并由 `docs/.doc-pilot.json` 管理
 - 当前根目录仍保留需求文档原件与其 Markdown 快照
-- 本项目当前没有可确认的 Jira / 工单前置门配置；不得沿用其他项目的 Jira 规则
+- 本项目已配置 Jira Cloud 站点 `wilfredchau.atlassian.net`，项目 Key 为 `SPKB`
+- 当前开发前置建票 skill 为 `.trae/skills/dev-with-ticket/SKILL.md`
 
 如后续项目结构、值守 skill 路径或流程发生变化，应优先更新本文件。

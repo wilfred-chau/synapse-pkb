@@ -3,15 +3,15 @@
   "project_name": "个人知识库系统（PKB）",
   "docs_root": "docs",
   "docs_language": "zh",
-  "vcs": "none",
+  "vcs": "git",
   "commit_message": {
     "language": "en",
     "conventional_commits": true
   },
   "ticket_system": {
-    "enabled": false,
-    "prefix": "",
-    "gate_skill_path": ""
+    "enabled": true,
+    "prefix": "SPKB",
+    "gate_skill_path": ".trae/skills/dev-with-ticket/SKILL.md"
   },
   "requirements_source": {
     "enabled": true,

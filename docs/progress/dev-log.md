@@ -189,3 +189,32 @@ _(暂无轮转卷)_
 
 **遗留/Next**：
 - 后续所有开发任务收工时，统一按“commit message 草案 + 建议 add 文件清单”输出
+
+## 2026-09-05｜接入 Jira Cloud 与开发前置建票 skill
+
+**背景**：项目后续需要把开发任务和 bug 修复与 Jira ticket 关联起来，形成“先建票、后开发、commit 带编号”的闭环，方便个人项目长期追踪。
+
+**产出**：
+- 在 Jira Cloud 站点创建软件看板项目 `synapse-pkb`
+- 项目 Key 确认为 `SPKB`
+- 新增本地凭据文件 `.env.local`（仅本地使用，已被 `.gitignore` 排除）
+- 新增 skill `.trae/skills/dev-with-ticket/`
+- 新增脚本 `create-jira-issue.ps1`，可通过 Jira REST API 创建 Task / Bug
+- 更新 `docs/.doc-pilot.json`，启用 `ticket_system.enabled = true` 并接入 `dev-with-ticket`
+- 更新 `CLAUDE.md`，同步 Jira 与 ticket 前置门约定
+
+**过程要点（踩坑与决策）**：
+- token 只写入本地 `.env.local`，不进入任何会被 Git 提交的文件
+- Jira 项目采用软件看板（Kanban）模板，避免引入 Scrum / Sprint 流程负担
+- 站点 issue type 名称是中文本地化值，因此建票脚本增加了对 `任务` / `缺陷` 的兼容解析与兜底逻辑
+- `dev-with-ticket` 不替代 `doc-pilot`；两者的顺序是“先按 doc-pilot 读文档，再建票，再经用户确认后开发”
+
+**验证**：
+- Jira API 认证成功
+- 成功创建 Jira 项目 `synapse-pkb`，Key = `SPKB`
+- 成功创建验证票 `SPKB-1`
+- `.env.local` 已被 `.gitignore` 排除
+
+**遗留/Next**：
+- 后续所有开发 / 修复任务，先走 `dev-with-ticket` 建票，再进入实际开发
+- commit message 草案统一带 `[SPKB-N]` 前缀
