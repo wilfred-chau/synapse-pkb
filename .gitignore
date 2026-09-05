@@ -1,0 +1,44 @@
+# Operating system
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Local AI tooling
+.trae/
+
+# Java / Spring Boot
+target/
+build/
+.gradle/
+out/
+*.class
+*.jar
+*.war
+*.log
+
+# Node / React
+node_modules/
+dist/
+coverage/
+.npm/
+.pnpm-store/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Sensitive local project docs
+docs/deploy/server-inventory.md
+docs/deploy/DEPLOYMENT.md
+docs/progress/STATUS.md
+docs/progress/dev-log.md
+
+# Archives / temporary files
+*.zip
+*.tmp
+*.temp
