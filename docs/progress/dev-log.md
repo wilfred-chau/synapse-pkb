@@ -355,3 +355,31 @@ _(暂无轮转卷)_
 **遗留/Next**：
 - 若后续新增更多本地运行配置项，优先同步补充到 `.env.example`
 - 后续可再补一份 IDEA Run Configuration 使用说明，方便本地新环境快速恢复
+
+## 2026-09-06｜修复 dev-with-ticket 的 Jira 中文乱码
+
+**背景**：用户反馈通过 `dev-with-ticket` skill 创建的 Jira 工单中，中文标题和中文描述都变成了问号；此前虽然已经改成通过 UTF-8 文件传参，但 `SPKB-2` 仍然损坏，说明编码问题还存在于 HTTP 请求发送阶段。
+
+**产出**：
+- 修复 `.trae/skills/dev-with-ticket/scripts/create-jira-issue.ps1` 的 UTF-8 请求体发送逻辑
+- 增加 PowerShell 输出编码设置 `$OutputEncoding = [System.Text.Encoding]::UTF8`
+- 请求头显式声明 `application/json; charset=utf-8`
+- 文件输入的 `Summary` / `Description` 在发送前执行 `Trim()`
+- 用修复后的脚本创建中文验证票 `SPKB-3`
+- 重建 A1 工单为 `SPKB-4`
+- 将损坏的 `SPKB-2` 标记作废并流转到完成态
+
+**过程要点（踩坑与决策）**：
+- 问题不在 Jira 展示层，也不在 UTF-8 文件读取本身，而在 `Invoke-RestMethod` 的请求体仍直接发送字符串
+- 脚本十六进制检查显示文件头为 ASCII 文本内容，无 BOM；由于脚本内无中文字面量，因此文件保存编码不是本次主因
+- 删除 `SPKB-2` 时 Jira API 返回 `403`，说明当前权限下不能删除 issue，因此改为“作废说明 + 关闭流转”的处理方式
+
+**验证**：
+- 使用中文 UTF-8 文件输入创建 `SPKB-3`
+- Jira API 回读 `SPKB-3`，中文标题和中文描述均完整
+- 使用 A1 本地方案文件重建 `SPKB-4`
+- Jira API 回读 `SPKB-4`，中文标题和描述均完整
+- 浏览器自动化尝试访问 Jira 页面时被 Atlassian 登录页拦截，无法在缺少网页登录凭据的前提下进入 issue 详情页
+
+**遗留/Next**：
+- 若后续需要做网页端自动核验，需要补充 Atlassian 网页登录态或改为人工登录后复核

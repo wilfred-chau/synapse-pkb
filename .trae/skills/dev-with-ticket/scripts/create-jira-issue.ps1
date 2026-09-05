@@ -19,6 +19,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 [Console]::InputEncoding = [System.Text.UTF8Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 if ($SummaryFile) {
     if (-not (Test-Path $SummaryFile)) {
@@ -42,6 +43,9 @@ if ([string]::IsNullOrWhiteSpace($Description)) {
     throw "Description is required. Provide -Description or -DescriptionFile."
 }
 
+$Summary = $Summary.Trim()
+$Description = $Description.Trim()
+
 if (-not (Test-Path $ConfigPath)) {
     throw "Jira config file not found: $ConfigPath"
 }
@@ -63,7 +67,7 @@ $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
 $headers = @{
     Authorization = 'Basic ' + $basic
     Accept = 'application/json'
-    'Content-Type' = 'application/json'
+    'Content-Type' = 'application/json; charset=utf-8'
 }
 
 $project = Invoke-RestMethod -Uri ($config['JIRA_SITE'] + "/rest/api/3/project/$ProjectKey") -Headers $headers -Method Get
@@ -124,7 +128,9 @@ $payload = @{
     }
 } | ConvertTo-Json -Depth 10
 
-$issue = Invoke-RestMethod -Uri ($config['JIRA_SITE'] + '/rest/api/3/issue') -Headers $headers -Method Post -Body $payload
+$payloadBytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
+
+$issue = Invoke-RestMethod -Uri ($config['JIRA_SITE'] + '/rest/api/3/issue') -Headers $headers -Method Post -Body $payloadBytes
 
 [PSCustomObject]@{
     key = $issue.key
