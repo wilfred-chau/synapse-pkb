@@ -1,0 +1,16 @@
+{
+  "task_id": "TASK-YYYYMMDD-001",
+  "title": "",
+  "level": "L4",
+  "stage": "待处理",
+  "ticket_key": null,
+  "plan_path": null,
+  "affected_modules": [],
+  "completed_steps": [],
+  "current_step": "",
+  "blockers": [],
+  "next_step": "",
+  "key_files": [],
+  "created_at": "",
+  "updated_at": ""
+}

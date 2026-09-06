@@ -14,6 +14,13 @@
     "conventional_commits": true
   },
 
+  "skills_registry": {
+    "_comment": "登记本项目实际使用的协作 skill 路径，随宿主 Agent 工具（Trae/Claude Code/Cline 等）不同而不同；CLAUDE.md 和各 skill 正文不重复硬编码这些路径，统一从这里读取。",
+    "doc_pilot": "",
+    "plan_before_code": "",
+    "dev_with_ticket": ""
+  },
+
   "ticket_system": {
     "_comment": "若项目有独立的工单/需求票 skill（如 Jira/Linear 建票流程），在这里登记；enabled=false 时 doc-pilot 完全跳过建票门相关的路由和检查单条目。",
     "enabled": false,

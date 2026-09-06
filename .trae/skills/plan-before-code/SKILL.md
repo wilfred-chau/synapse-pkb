@@ -25,12 +25,13 @@ description: "Turns medium-to-large development requests into a confirmable impl
 
 ## 触发条件
 
-满足任一条件时触发：
+对应 `doc-pilot` 任务分级中的 **L3/L4**，满足任一条件时触发：
 
 - 用户提出的功能开发涉及**新增模块**
-- 需求涉及**跨多个文件**的改动
+- 需求涉及**跨多个文件**的改动（`doc-pilot` 会给出预计涉及文件数作为参考线）
 - 改动会影响**现有数据结构**或**接口契约**
 - 明显复杂的 bug 修复，且**排查思路不明确**或**可能有多种修复路径**
+- 属于 L4（跨模块、影响架构、数据库结构变更、多阶段实施）的任务无条件触发本 skill
 
 ## 不触发条件
 
@@ -93,6 +94,12 @@ description: "Turns medium-to-large development requests into a confirmable impl
 - 等待用户确认或修改意见
 - 未经确认，不进入 `dev-with-ticket`
 - 不因为用户说“继续”就默认方案已确认，除非上下文明确表达认可
+
+### 2.1 若存在跨会话任务记录，同步更新阶段
+
+若本次任务已由 `doc-pilot` 创建了跨会话任务记录（通常见于 L4，或预计跨会话的 L3），
+方案输出后将其阶段更新为"方案确认中"；用户确认后更新为"已确认待建票"。不存在任务记录
+的任务跳过本步骤。
 
 ### 3. 把方案摘要传给 dev-with-ticket
 
