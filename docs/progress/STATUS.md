@@ -15,7 +15,7 @@
 
 ## 最近动态（新→旧，最多 8 条）
 
-- **2026-09-06**：已创建 Jira `SPKB-8` 并完成审计日志薄骨架：后端新增 `operation_logs` 表、`@AuditOperation`、AOP 切面与审计持久化服务，并以登录成功作为第一条样板审计事件；本地后端测试、前端构建、前后端启动联调和 PostgreSQL 只读核验均通过，但当前环境缺少 CentOS SSH 登录态，服务器本地 seed 导入验证待补。
+- **2026-09-06**：已创建 Jira `SPKB-8` 并完成审计日志薄骨架：后端新增 `operation_logs` 表、`@AuditOperation`、AOP 切面与审计持久化服务，并以登录成功作为第一条样板审计事件；本地后端测试、前端构建、前后端启动联调、PostgreSQL 只读核验，以及服务器本地 `G2__seed_operation_logs.sql` 导入验证均已完成。
 - **2026-09-06**：已创建 Jira `SPKB-7` 并完成一次架构纠偏：后端 ORM 从 JPA 切换为 MyBatis-Plus，A1 认证链路改为 Mapper 持久层；同时建立“按业务域分包，域内显式分层”的后端目录基线，并预留 XML Mapper 目录；本地后端测试、前端构建和前后端启动联调均通过。
 - **2026-09-06**：已创建 Jira `SPKB-6` 并完成统一状态码体系第一轮加固：后端新增统一错误码定义与 `BusinessException` 骨架，认证链路细化为 `AUTHENTICATION_REQUIRED`、`AUTH_INVALID_TOKEN`、`AUTH_INVALID_CREDENTIALS` 等错误码；本地后端测试、前端构建和前后端启动联调均通过。
 - **2026-09-06**：已完成一轮公共能力加固并创建 Jira `SPKB-5`：后端补齐统一 `ApiResponse` 契约、全局异常处理与 requestId 请求链路日志；前端补齐统一 API 调用层、401 处理与开发态请求/响应日志；本地后端测试、前端构建和前后端启动联调均通过。
@@ -41,7 +41,6 @@
 - [ ] 基于统一错误码骨架，为后续 A2-A5 业务接口补齐分模块业务错误码
 - [ ] 基于新的 MyBatis-Plus 与域内分层基线，为 A2-A5 模块沿用统一的 entity/mapper/service/controller 结构
 - [ ] 基于 `@AuditOperation` 审计骨架，为后续 A2-A5 的 CRUD、标签维护、关联确认动作补齐审计接入
-- [ ] 在具备 CentOS SSH 登录态后，补做 `G2__seed_operation_logs.sql` 的服务器本地导入验证
 - [ ] 在 A2/A5 后续任务中，为业务表补齐 `user_id` 字段、索引与查询过滤
 - [ ] 为 `synapse_pkb` 数据库初始化后续业务表结构与 `vector` 扩展
 - [ ] 在后续开发任务中启用 Jira 建票前置门，统一使用 `SPKB-*` ticket 编号

@@ -516,11 +516,9 @@ _(暂无轮转卷)_
 - `POST http://127.0.0.1:5173/api/auth/login` 通过 Vite 代理联调成功
 - 使用本机 `psql` 只读查询 PostgreSQL，确认 `operation_logs` 中存在刚写入的 `AUTH_LOGIN|pkb-admin|USER|1|true|<requestId>` 记录
 
-**验证缺口 / 阻塞**：
-- 当前环境无法通过 `ssh root@192.168.106.130` 进入 CentOS，返回 `Permission denied (publickey,...)`
-- 因此本次尚未完成“服务器本地执行 `G2__seed_operation_logs.sql`”这一步验证，后续在具备服务器登录态后补做
+**补充验证**：
+- 用户随后已代为完成 CentOS 服务器本地 `G2__seed_operation_logs.sql` 导入验证，因此本次审计日志任务现已达到完整收尾状态
 
 **遗留/Next**：
 - 为 A2-A5 的新增/编辑/删除/关联确认方法逐步挂接 `@AuditOperation`
 - 视后续需求决定是否把失败安全事件单独建模，避免和业务审计混表
-- 在拿到 CentOS SSH 登录态后，补做 `G2__seed_operation_logs.sql` 的服务器本地导入与验证
