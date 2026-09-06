@@ -1,8 +1,8 @@
 package com.wilfredchau.synapsepkb.security;
 
 import com.wilfredchau.synapsepkb.common.exception.SecurityErrorResponseWriter;
-import com.wilfredchau.synapsepkb.user.PkbUser;
-import com.wilfredchau.synapsepkb.user.PkbUserRepository;
+import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,15 +25,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
-    private final PkbUserRepository userRepository;
+    private final PkbUserService pkbUserService;
     private final SecurityErrorResponseWriter securityErrorResponseWriter;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            PkbUserRepository userRepository,
+            PkbUserService pkbUserService,
             SecurityErrorResponseWriter securityErrorResponseWriter) {
         this.jwtService = jwtService;
-        this.userRepository = userRepository;
+        this.pkbUserService = pkbUserService;
         this.securityErrorResponseWriter = securityErrorResponseWriter;
     }
 
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authorizationHeader.substring(7);
         try {
             AuthenticatedUser tokenUser = jwtService.parseToken(token);
-            PkbUser databaseUser = userRepository.findByUsername(tokenUser.username()).orElse(null);
+            PkbUserEntity databaseUser = pkbUserService.findByUsername(tokenUser.username()).orElse(null);
 
             if (databaseUser != null && databaseUser.isEnabled()) {
                 AuthenticatedUser authenticatedUser = new AuthenticatedUser(

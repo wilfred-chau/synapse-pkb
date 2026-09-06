@@ -451,3 +451,36 @@ _(暂无轮转卷)_
 **遗留/Next**：
 - 后续在 A2-A5 业务模块中继续补齐分模块业务错误码，避免滥用 `BAD_REQUEST` / `REQUEST_FAILED`
 - 视后续业务复杂度，再决定是否补充错误码对外文档或前端映射表
+
+## 2026-09-06｜架构纠偏：切换 MyBatis-Plus 并建立后端分层基线
+
+**背景**：用户在项目早期及时指出两个架构问题：后端 ORM 应切换为更适合复杂 SQL 演进的 MyBatis-Plus；同时，现有代码虽然按功能有初步分包，但还没有清晰固定 `entity / dto / vo / mapper / service / controller` 的分层约束。若继续在当前基础上推进 A2-A5，后续返工成本会快速放大，因此本次先完成架构纠偏。
+
+**产出**：
+- 创建 Jira ticket `SPKB-7`
+- 后端依赖从 `spring-boot-starter-data-jpa` 切换为 `mybatis-plus-spring-boot3-starter`
+- 移除 A1 现有链路中的 JPA Entity / Repository，实现 `PkbUserEntity + PkbUserMapper + PkbUserService`
+- 建立 `auth/controller`、`auth/service/impl`、`auth/model/dto`、`auth/model/vo`、`user/entity`、`user/mapper`、`user/service/impl` 等目录结构
+- 新增 MyBatis-Plus 自动填充处理器，接管 `created_at` / `updated_at`
+- 预留 `resources/mapper/**` XML 目录，并让 `PkbUserMapper.xml` 承载查询 SQL
+- 认证链路在保持现有 API 契约、状态码体系和 JWT 行为不变的前提下完成持久层迁移
+- 更新架构快照与项目进度文档
+
+**过程要点（踩坑与决策）**：
+- 本次按“按业务域分包，域内显式分层”落地，而不是改成全局 `controller/service/mapper` 大目录，避免后续模块继续混在一起
+- 虽然当前 SQL 还很简单，但已经预留 XML Mapper 目录约定，让后续复杂 SQL 不需要二次迁移目录结构
+- A1 当前仅有 `pkb_users` 一处 JPA 落地，因此选择现在完成 ORM 切换，收益远大于成本
+- 为减少行为回归，本次没有顺手改认证协议、接口返回格式或测试口径，只替换持久层与包结构
+
+**验证**：
+- `mvn -pl backend test`
+- `npm run build`
+- `mvn -pl backend spring-boot:run`
+- `GET http://localhost:8080/actuator/health` 返回 `UP`
+- `POST http://127.0.0.1:5173/api/auth/login` 通过 Vite 代理联调成功
+- `GET http://localhost:8080/api/auth/me` 携带有效 token 返回当前用户
+- `GET http://localhost:8080/api/auth/me` 携带无效 token 返回 `AUTH_INVALID_TOKEN`
+
+**遗留/Next**：
+- 后续 A2-A5 继续沿用这套分层目录模板，避免重新出现混放结构
+- 若后续业务 SQL 明显变复杂，可继续在现有 XML Mapper 目录下扩展，而无需再做 ORM 路线切换

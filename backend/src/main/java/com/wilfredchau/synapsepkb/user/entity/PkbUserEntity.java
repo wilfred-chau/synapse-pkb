@@ -1,55 +1,38 @@
-package com.wilfredchau.synapsepkb.user;
+package com.wilfredchau.synapsepkb.user.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.OffsetDateTime;
 
-@Entity
-@Table(name = "pkb_users")
-public class PkbUser {
+@TableName("pkb_users")
+public class PkbUserEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @Column(nullable = false, length = 64, unique = true)
+    @TableField("username")
     private String username;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @TableField("password_hash")
     private String passwordHash;
 
-    @Column(name = "display_name", nullable = false, length = 128)
+    @TableField("display_name")
     private String displayName;
 
-    @Column(name = "space_key", nullable = false, length = 128)
+    @TableField("space_key")
     private String spaceKey;
 
-    @Column(nullable = false)
+    @TableField("enabled")
     private boolean enabled = true;
 
-    @Column(name = "created_at", nullable = false)
+    @TableField(value = "created_at", fill = FieldFill.INSERT)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private OffsetDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        OffsetDateTime now = OffsetDateTime.now();
-        createdAt = now;
-        updatedAt = now;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = OffsetDateTime.now();
-    }
 
     public Long getId() {
         return id;
@@ -103,7 +86,15 @@ public class PkbUser {
         return createdAt;
     }
 
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public OffsetDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

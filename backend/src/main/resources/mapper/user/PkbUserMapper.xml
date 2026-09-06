@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wilfredchau.synapsepkb.user.mapper.PkbUserMapper">
+
+    <resultMap id="PkbUserEntityMap" type="com.wilfredchau.synapsepkb.user.entity.PkbUserEntity">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="displayName" column="display_name"/>
+        <result property="spaceKey" column="space_key"/>
+        <result property="enabled" column="enabled"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="selectByUsername" resultMap="PkbUserEntityMap">
+        SELECT id,
+               username,
+               password_hash,
+               display_name,
+               space_key,
+               enabled,
+               created_at,
+               updated_at
+        FROM pkb_users
+        WHERE username = #{username}
+        LIMIT 1
+    </select>
+</mapper>

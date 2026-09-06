@@ -1,4 +1,4 @@
-package com.wilfredchau.synapsepkb.auth.dto;
+package com.wilfredchau.synapsepkb.auth.model.vo;
 
 public record AuthResponse(
         String accessToken,

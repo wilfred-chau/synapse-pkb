@@ -1,40 +1,42 @@
-package com.wilfredchau.synapsepkb.auth;
+package com.wilfredchau.synapsepkb.auth.service.impl;
 
-import com.wilfredchau.synapsepkb.auth.dto.AuthResponse;
-import com.wilfredchau.synapsepkb.auth.dto.CurrentUserResponse;
-import com.wilfredchau.synapsepkb.auth.dto.LoginRequest;
+import com.wilfredchau.synapsepkb.auth.model.dto.LoginRequest;
+import com.wilfredchau.synapsepkb.auth.model.vo.AuthResponse;
+import com.wilfredchau.synapsepkb.auth.model.vo.CurrentUserResponse;
+import com.wilfredchau.synapsepkb.auth.service.AuthService;
 import com.wilfredchau.synapsepkb.common.api.CommonErrorCode;
 import com.wilfredchau.synapsepkb.common.exception.BusinessException;
 import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
 import com.wilfredchau.synapsepkb.security.JwtService;
-import com.wilfredchau.synapsepkb.user.PkbUser;
-import com.wilfredchau.synapsepkb.user.PkbUserRepository;
+import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthService {
+public class AuthServiceImpl implements AuthService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    private final PkbUserRepository userRepository;
+    private final PkbUserService pkbUserService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(
-            PkbUserRepository userRepository,
+    public AuthServiceImpl(
+            PkbUserService pkbUserService,
             PasswordEncoder passwordEncoder,
             JwtService jwtService) {
-        this.userRepository = userRepository;
+        this.pkbUserService = pkbUserService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
+    @Override
     public AuthResponse login(LoginRequest request) {
-        PkbUser user = userRepository.findByUsername(request.username())
-                .filter(PkbUser::isEnabled)
+        PkbUserEntity user = pkbUserService.findByUsername(request.username())
+                .filter(PkbUserEntity::isEnabled)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.AUTH_INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -52,6 +54,7 @@ public class AuthService {
         return new AuthResponse(jwtService.generateToken(authenticatedUser), toCurrentUser(authenticatedUser));
     }
 
+    @Override
     public CurrentUserResponse me(AuthenticatedUser currentUser) {
         return toCurrentUser(currentUser);
     }

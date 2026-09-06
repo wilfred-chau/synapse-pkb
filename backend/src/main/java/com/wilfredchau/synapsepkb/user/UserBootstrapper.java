@@ -1,6 +1,8 @@
 package com.wilfredchau.synapsepkb.user;
 
 import com.wilfredchau.synapsepkb.config.SecurityProperties;
+import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,15 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserBootstrapper implements ApplicationRunner {
 
-    private final PkbUserRepository userRepository;
+    private final PkbUserService pkbUserService;
     private final PasswordEncoder passwordEncoder;
     private final SecurityProperties securityProperties;
 
     public UserBootstrapper(
-            PkbUserRepository userRepository,
+            PkbUserService pkbUserService,
             PasswordEncoder passwordEncoder,
             SecurityProperties securityProperties) {
-        this.userRepository = userRepository;
+        this.pkbUserService = pkbUserService;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
     }
@@ -25,8 +27,8 @@ public class UserBootstrapper implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         SecurityProperties.BootstrapUser bootstrapUser = securityProperties.getBootstrapUser();
-        PkbUser user = userRepository.findByUsername(bootstrapUser.getUsername())
-                .orElseGet(PkbUser::new);
+        PkbUserEntity user = pkbUserService.findByUsername(bootstrapUser.getUsername())
+                .orElseGet(PkbUserEntity::new);
 
         user.setUsername(bootstrapUser.getUsername());
         user.setPasswordHash(passwordEncoder.encode(bootstrapUser.getPassword()));
@@ -34,6 +36,6 @@ public class UserBootstrapper implements ApplicationRunner {
         user.setSpaceKey(bootstrapUser.getSpaceKey());
         user.setEnabled(true);
 
-        userRepository.save(user);
+        pkbUserService.saveOrUpdate(user);
     }
 }

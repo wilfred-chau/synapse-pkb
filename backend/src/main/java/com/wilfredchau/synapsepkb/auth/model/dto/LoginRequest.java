@@ -1,4 +1,4 @@
-package com.wilfredchau.synapsepkb.auth.dto;
+package com.wilfredchau.synapsepkb.auth.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

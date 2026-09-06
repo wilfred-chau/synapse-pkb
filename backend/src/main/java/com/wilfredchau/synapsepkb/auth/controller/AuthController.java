@@ -1,12 +1,13 @@
-package com.wilfredchau.synapsepkb.auth;
+package com.wilfredchau.synapsepkb.auth.controller;
 
-import com.wilfredchau.synapsepkb.auth.dto.AuthResponse;
-import com.wilfredchau.synapsepkb.auth.dto.CurrentUserResponse;
-import com.wilfredchau.synapsepkb.auth.dto.LoginRequest;
+import com.wilfredchau.synapsepkb.auth.model.dto.LoginRequest;
+import com.wilfredchau.synapsepkb.auth.model.vo.AuthResponse;
+import com.wilfredchau.synapsepkb.auth.model.vo.CurrentUserResponse;
+import com.wilfredchau.synapsepkb.auth.service.AuthService;
 import com.wilfredchau.synapsepkb.common.api.ApiResponse;
 import com.wilfredchau.synapsepkb.common.logging.RequestTracing;
-import jakarta.servlet.http.HttpServletRequest;
 import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;

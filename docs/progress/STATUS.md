@@ -15,6 +15,7 @@
 
 ## 最近动态（新→旧，最多 8 条）
 
+- **2026-09-06**：已创建 Jira `SPKB-7` 并完成一次架构纠偏：后端 ORM 从 JPA 切换为 MyBatis-Plus，A1 认证链路改为 Mapper 持久层；同时建立“按业务域分包，域内显式分层”的后端目录基线，并预留 XML Mapper 目录；本地后端测试、前端构建和前后端启动联调均通过。
 - **2026-09-06**：已创建 Jira `SPKB-6` 并完成统一状态码体系第一轮加固：后端新增统一错误码定义与 `BusinessException` 骨架，认证链路细化为 `AUTHENTICATION_REQUIRED`、`AUTH_INVALID_TOKEN`、`AUTH_INVALID_CREDENTIALS` 等错误码；本地后端测试、前端构建和前后端启动联调均通过。
 - **2026-09-06**：已完成一轮公共能力加固并创建 Jira `SPKB-5`：后端补齐统一 `ApiResponse` 契约、全局异常处理与 requestId 请求链路日志；前端补齐统一 API 调用层、401 处理与开发态请求/响应日志；本地后端测试、前端构建和前后端启动联调均通过。
 - **2026-09-06**：已修复 `dev-with-ticket` 的 Jira 中文乱码：`create-jira-issue.ps1` 改为以 UTF-8 字节流发送 JSON 请求体并显式声明 `charset=utf-8`；已创建中文验证票 `SPKB-3` 与重建后的 A1 工单 `SPKB-4`，损坏的 `SPKB-2` 已标记作废并关闭。
@@ -37,6 +38,7 @@
 - [ ] 组织相关开发人员审核《新会话提示词指南》，收集反馈并完成首轮修订
 - [ ] 输出首版 PKB 部署目录与 Compose 方案
 - [ ] 基于统一错误码骨架，为后续 A2-A5 业务接口补齐分模块业务错误码
+- [ ] 基于新的 MyBatis-Plus 与域内分层基线，为 A2-A5 模块沿用统一的 entity/mapper/service/controller 结构
 - [ ] 在 A2/A5 后续任务中，为业务表补齐 `user_id` 字段、索引与查询过滤
 - [ ] 为 `synapse_pkb` 数据库初始化后续业务表结构与 `vector` 扩展
 - [ ] 在后续开发任务中启用 Jira 建票前置门，统一使用 `SPKB-*` ticket 编号
