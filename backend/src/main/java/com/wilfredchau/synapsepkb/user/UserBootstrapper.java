@@ -1,7 +1,7 @@
 package com.wilfredchau.synapsepkb.user;
 
 import com.wilfredchau.synapsepkb.config.SecurityProperties;
-import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.entity.PkbUser;
 import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -27,8 +27,8 @@ public class UserBootstrapper implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         SecurityProperties.BootstrapUser bootstrapUser = securityProperties.getBootstrapUser();
-        PkbUserEntity user = pkbUserService.findByUsername(bootstrapUser.getUsername())
-                .orElseGet(PkbUserEntity::new);
+        PkbUser user = pkbUserService.findByUsername(bootstrapUser.getUsername())
+                .orElseGet(PkbUser::new);
 
         user.setUsername(bootstrapUser.getUsername());
         user.setPasswordHash(passwordEncoder.encode(bootstrapUser.getPassword()));

@@ -1,12 +1,12 @@
 package com.wilfredchau.synapsepkb.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.entity.PkbUser;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface PkbUserMapper extends BaseMapper<PkbUserEntity> {
+public interface PkbUserMapper extends BaseMapper<PkbUser> {
 
-    PkbUserEntity selectByUsername(@Param("username") String username);
+    PkbUser selectByUsername(@Param("username") String username);
 }

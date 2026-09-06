@@ -8,7 +8,7 @@ import com.wilfredchau.synapsepkb.common.api.CommonErrorCode;
 import com.wilfredchau.synapsepkb.common.exception.BusinessException;
 import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
 import com.wilfredchau.synapsepkb.security.JwtService;
-import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.entity.PkbUser;
 import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +35,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest request) {
-        PkbUserEntity user = pkbUserService.findByUsername(request.username())
-                .filter(PkbUserEntity::isEnabled)
+        PkbUser user = pkbUserService.findByUsername(request.username())
+                .filter(PkbUser::isEnabled)
                 .orElseThrow(() -> new BusinessException(CommonErrorCode.AUTH_INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {

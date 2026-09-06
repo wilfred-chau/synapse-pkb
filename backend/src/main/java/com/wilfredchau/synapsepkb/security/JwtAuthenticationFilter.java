@@ -1,7 +1,7 @@
 package com.wilfredchau.synapsepkb.security;
 
 import com.wilfredchau.synapsepkb.common.exception.SecurityErrorResponseWriter;
-import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.entity.PkbUser;
 import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authorizationHeader.substring(7);
         try {
             AuthenticatedUser tokenUser = jwtService.parseToken(token);
-            PkbUserEntity databaseUser = pkbUserService.findByUsername(tokenUser.username()).orElse(null);
+            PkbUser databaseUser = pkbUserService.findByUsername(tokenUser.username()).orElse(null);
 
             if (databaseUser != null && databaseUser.isEnabled()) {
                 AuthenticatedUser authenticatedUser = new AuthenticatedUser(

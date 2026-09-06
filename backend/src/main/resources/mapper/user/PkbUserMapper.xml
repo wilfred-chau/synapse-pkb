@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wilfredchau.synapsepkb.user.mapper.PkbUserMapper">
 
-    <resultMap id="PkbUserEntityMap" type="com.wilfredchau.synapsepkb.user.entity.PkbUserEntity">
+    <resultMap id="PkbUserMap" type="com.wilfredchau.synapsepkb.user.entity.PkbUser">
         <id property="id" column="id"/>
         <result property="username" column="username"/>
         <result property="passwordHash" column="password_hash"/>
@@ -15,7 +15,7 @@
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <select id="selectByUsername" resultMap="PkbUserEntityMap">
+    <select id="selectByUsername" resultMap="PkbUserMap">
         SELECT id,
                username,
                password_hash,

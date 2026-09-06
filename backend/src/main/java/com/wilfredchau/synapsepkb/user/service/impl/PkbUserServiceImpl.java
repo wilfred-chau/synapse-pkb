@@ -1,6 +1,6 @@
 package com.wilfredchau.synapsepkb.user.service.impl;
 
-import com.wilfredchau.synapsepkb.user.entity.PkbUserEntity;
+import com.wilfredchau.synapsepkb.user.entity.PkbUser;
 import com.wilfredchau.synapsepkb.user.mapper.PkbUserMapper;
 import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import java.util.Optional;
@@ -16,12 +16,12 @@ public class PkbUserServiceImpl implements PkbUserService {
     }
 
     @Override
-    public Optional<PkbUserEntity> findByUsername(String username) {
+    public Optional<PkbUser> findByUsername(String username) {
         return Optional.ofNullable(pkbUserMapper.selectByUsername(username));
     }
 
     @Override
-    public void saveOrUpdate(PkbUserEntity user) {
+    public void saveOrUpdate(PkbUser user) {
         if (user.getId() == null) {
             pkbUserMapper.insert(user);
             return;

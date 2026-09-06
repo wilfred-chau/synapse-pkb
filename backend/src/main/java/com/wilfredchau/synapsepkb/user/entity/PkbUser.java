@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.OffsetDateTime;
 
 @TableName("pkb_users")
-public class PkbUserEntity {
+public class PkbUser {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
