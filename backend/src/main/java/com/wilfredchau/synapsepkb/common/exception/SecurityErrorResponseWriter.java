@@ -1,13 +1,13 @@
 package com.wilfredchau.synapsepkb.common.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wilfredchau.synapsepkb.common.api.ApiError;
+import com.wilfredchau.synapsepkb.common.api.ApiErrorCode;
 import com.wilfredchau.synapsepkb.common.api.ApiResponse;
+import com.wilfredchau.synapsepkb.common.api.CommonErrorCode;
 import com.wilfredchau.synapsepkb.common.logging.RequestTracing;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
@@ -24,35 +24,38 @@ public class SecurityErrorResponseWriter {
         writeError(
                 request,
                 response,
-                HttpServletResponse.SC_UNAUTHORIZED,
-                "UNAUTHORIZED",
-                "Authentication is required");
+                CommonErrorCode.AUTHENTICATION_REQUIRED);
     }
 
     public void writeForbidden(HttpServletRequest request, HttpServletResponse response) throws IOException {
         writeError(
                 request,
                 response,
-                HttpServletResponse.SC_FORBIDDEN,
-                "FORBIDDEN",
-                "You do not have permission to access this resource");
+                CommonErrorCode.ACCESS_DENIED);
+    }
+
+    public void writeInvalidToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        writeError(
+                request,
+                response,
+                CommonErrorCode.AUTH_INVALID_TOKEN);
     }
 
     private void writeError(
             HttpServletRequest request,
             HttpServletResponse response,
-            int status,
-            String code,
-            String message) throws IOException {
+            ApiErrorCode errorCode) throws IOException {
         String requestId = (String) request.getAttribute(RequestTracing.REQUEST_ID_ATTRIBUTE);
 
-        response.setStatus(status);
+        response.setStatus(errorCode.status().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.setHeader(RequestTracing.REQUEST_ID_HEADER, requestId);
+        if (requestId != null) {
+            response.setHeader(RequestTracing.REQUEST_ID_HEADER, requestId);
+        }
 
         ApiResponse<Void> body = ApiResponse.failure(
-                new ApiError(code, message, Map.of()),
+                errorCode.toError(),
                 requestId);
 
         objectMapper.writeValue(response.getWriter(), body);

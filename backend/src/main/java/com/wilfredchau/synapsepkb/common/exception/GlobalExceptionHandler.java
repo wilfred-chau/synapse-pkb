@@ -1,7 +1,7 @@
 package com.wilfredchau.synapsepkb.common.exception;
 
-import com.wilfredchau.synapsepkb.common.api.ApiError;
 import com.wilfredchau.synapsepkb.common.api.ApiResponse;
+import com.wilfredchau.synapsepkb.common.api.CommonErrorCode;
 import com.wilfredchau.synapsepkb.common.logging.RequestTracing;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
@@ -34,7 +34,16 @@ public class GlobalExceptionHandler {
         details.put("fieldErrors", fieldErrors);
 
         return ResponseEntity.badRequest().body(ApiResponse.failure(
-                new ApiError("VALIDATION_ERROR", "Request validation failed", details),
+                CommonErrorCode.VALIDATION_ERROR.toError(details),
+                getRequestId(request)));
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+            BusinessException exception,
+            HttpServletRequest request) {
+        return ResponseEntity.status(exception.status()).body(ApiResponse.failure(
+                exception.toApiError(),
                 getRequestId(request)));
     }
 
@@ -43,16 +52,10 @@ public class GlobalExceptionHandler {
             ResponseStatusException exception,
             HttpServletRequest request) {
         HttpStatus status = HttpStatus.valueOf(exception.getStatusCode().value());
-        String code = switch (status) {
-            case UNAUTHORIZED -> "UNAUTHORIZED";
-            case FORBIDDEN -> "FORBIDDEN";
-            case NOT_FOUND -> "NOT_FOUND";
-            case BAD_REQUEST -> "BAD_REQUEST";
-            default -> "REQUEST_FAILED";
-        };
+        CommonErrorCode errorCode = CommonErrorCode.fromStatus(status);
 
         return ResponseEntity.status(status).body(ApiResponse.failure(
-                new ApiError(code, resolveReason(exception), Map.of()),
+                errorCode.toError(resolveReason(exception)),
                 getRequestId(request)));
     }
 
@@ -63,7 +66,7 @@ public class GlobalExceptionHandler {
         log.error("Unhandled application exception", exception);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.failure(
-                new ApiError("INTERNAL_SERVER_ERROR", "An unexpected error occurred", Map.of()),
+                CommonErrorCode.INTERNAL_SERVER_ERROR.toError(),
                 getRequestId(request)));
     }
 

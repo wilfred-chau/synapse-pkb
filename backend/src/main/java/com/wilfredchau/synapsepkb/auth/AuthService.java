@@ -3,16 +3,16 @@ package com.wilfredchau.synapsepkb.auth;
 import com.wilfredchau.synapsepkb.auth.dto.AuthResponse;
 import com.wilfredchau.synapsepkb.auth.dto.CurrentUserResponse;
 import com.wilfredchau.synapsepkb.auth.dto.LoginRequest;
+import com.wilfredchau.synapsepkb.common.api.CommonErrorCode;
+import com.wilfredchau.synapsepkb.common.exception.BusinessException;
 import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
 import com.wilfredchau.synapsepkb.security.JwtService;
 import com.wilfredchau.synapsepkb.user.PkbUser;
 import com.wilfredchau.synapsepkb.user.PkbUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -35,11 +35,11 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         PkbUser user = userRepository.findByUsername(request.username())
                 .filter(PkbUser::isEnabled)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.AUTH_INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             log.debug("Login rejected for user {}", request.username());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+            throw new BusinessException(CommonErrorCode.AUTH_INVALID_CREDENTIALS);
         }
 
         AuthenticatedUser authenticatedUser = new AuthenticatedUser(

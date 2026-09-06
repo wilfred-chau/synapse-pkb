@@ -1,5 +1,6 @@
 package com.wilfredchau.synapsepkb.security;
 
+import com.wilfredchau.synapsepkb.common.exception.SecurityErrorResponseWriter;
 import com.wilfredchau.synapsepkb.user.PkbUser;
 import com.wilfredchau.synapsepkb.user.PkbUserRepository;
 import io.jsonwebtoken.JwtException;
@@ -25,10 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final PkbUserRepository userRepository;
+    private final SecurityErrorResponseWriter securityErrorResponseWriter;
 
-    public JwtAuthenticationFilter(JwtService jwtService, PkbUserRepository userRepository) {
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            PkbUserRepository userRepository,
+            SecurityErrorResponseWriter securityErrorResponseWriter) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.securityErrorResponseWriter = securityErrorResponseWriter;
     }
 
     @Override
@@ -67,6 +73,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException ex) {
             log.debug("JWT parsing failed for request {}", request.getRequestURI());
             SecurityContextHolder.clearContext();
+            securityErrorResponseWriter.writeInvalidToken(request, response);
+            return;
         }
 
         filterChain.doFilter(request, response);

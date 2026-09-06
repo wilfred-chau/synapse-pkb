@@ -417,3 +417,37 @@ _(暂无轮转卷)_
 **遗留/Next**：
 - 后续新增业务接口时继续统一使用 `ApiResponse<T>`，不要再引入裸对象返回
 - 下一步可在该公共层基础上继续推进 A2 分类标签或 A3 统一录入
+
+## 2026-09-06｜状态码体系第一轮完善：统一错误码定义与业务异常骨架
+
+**背景**：上一轮公共能力加固已经统一了 `ApiResponse<T>` 和全局异常处理，但 `error.code` 仍停留在少量通用字符串常量阶段。继续推进后续业务模块前，需要先把错误码从“格式统一”推进到“语义统一”，避免后续接口继续散落返回粗粒度错误码。
+
+**产出**：
+- 创建 Jira ticket `SPKB-6`
+- 后端新增统一错误码定义接口 `ApiErrorCode` 与公共错误码枚举 `CommonErrorCode`
+- 后端新增 `BusinessException` 业务异常骨架，支持绑定 HTTP 状态码、错误码和默认消息
+- 改造 `GlobalExceptionHandler`，统一从错误码定义生成响应错误体
+- 改造 `SecurityErrorResponseWriter` 与 `JwtAuthenticationFilter`，细化认证错误码
+- 认证链路从通用 `UNAUTHORIZED` 收敛为 `AUTHENTICATION_REQUIRED`、`AUTH_INVALID_TOKEN`、`AUTH_INVALID_CREDENTIALS`
+- 补充后端测试，覆盖无 token、无效 token、错误密码等场景
+- 更新架构快照与项目进度文档
+
+**过程要点（踩坑与决策）**：
+- 本次仍然坚持“骨架先行”，没有一次性穷举未来所有业务错误码，只先沉淀公共错误码和认证样板
+- 前端本轮保持兼容，不引入新的前端错误码映射层，继续直接消费后端返回的稳定字符串码值
+- 无效 JWT 以前会退化为通用未认证响应，本次改为在过滤器层直接输出 `AUTH_INVALID_TOKEN`，方便后续前端和日志更准确定位问题
+- `ResponseStatusException` 仍保留兜底接入能力，但后续业务代码应优先抛 `BusinessException`，避免重新回到散落字符串时代
+
+**验证**：
+- `mvn -pl backend test`
+- `npm run build`
+- `mvn -pl backend spring-boot:run`
+- `GET http://localhost:8080/actuator/health` 返回 `UP`
+- `POST http://localhost:8080/api/auth/login` 使用错误密码返回 `AUTH_INVALID_CREDENTIALS`
+- `GET http://localhost:8080/api/auth/me` 携带无效 token 返回 `AUTH_INVALID_TOKEN`
+- `npm run dev -- --host 127.0.0.1`
+- `POST http://127.0.0.1:5173/api/auth/login` 通过 Vite 代理联调成功
+
+**遗留/Next**：
+- 后续在 A2-A5 业务模块中继续补齐分模块业务错误码，避免滥用 `BAD_REQUEST` / `REQUEST_FAILED`
+- 视后续业务复杂度，再决定是否补充错误码对外文档或前端映射表
