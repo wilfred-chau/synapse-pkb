@@ -484,3 +484,43 @@ _(暂无轮转卷)_
 **遗留/Next**：
 - 后续 A2-A5 继续沿用这套分层目录模板，避免重新出现混放结构
 - 若后续业务 SQL 明显变复杂，可继续在现有 XML Mapper 目录下扩展，而无需再做 ORM 路线切换
+
+## 2026-09-06｜审计日志薄骨架：注解、AOP 与 operation_logs 基线
+
+**背景**：在统一 API 契约、错误码体系、请求链路日志和 MyBatis-Plus 分层基线都已落地后，继续开发 A2-A5 时如果还没有审计能力，后续再回头补“谁做了什么”的横切能力会越来越贵。本次先按“薄骨架”思路补齐审计日志基础设施：不做完整平台，但把未来即插即用需要的接口形态和扩展位一次定对。
+
+**产出**：
+- 创建 Jira ticket `SPKB-8`
+- 新增 `operation_logs` 表的 Flyway 脚本 `V2__create_operation_logs.sql`
+- 新增审计种子脚本 `G2__seed_operation_logs.sql`
+- 新增 `@AuditOperation` 注解、审计切面、审计持久化服务与 `operationlog` 业务域
+- 通过 `OperationLogService + OperationLogMapper` 统一落库审计事件
+- 第一版审计模型包含 `actor_user_id`、`actor_username`、`action`、`target_type`、`target_id`、`request_id`、`success`、`message`、`details_json`、`occurred_at`
+- 以认证登录成功作为第一条样板审计事件，动作码为 `AUTH_LOGIN`
+- 增加后端集成测试，验证登录成功后确实新增审计记录
+- 更新架构快照与项目进度文档
+
+**过程要点（踩坑与决策）**：
+- 这次没有把审计做成“切面里写死一堆 if/else”，而是额外引入了 `AuditOperationCustomizer` 扩展位：切面负责统一抓公共上下文，具体业务对象解析交给 customizer，方便未来为条目编辑、标签合并、关联确认等场景定制目标对象和 details
+- 第一版明确只记录成功业务事件，不把登录失败、安全失败、异常堆栈一股脑塞进同一张表，避免“操作审计”和“安全事件”在模型层混杂
+- 切面内部对审计落库异常做了吞吐保护：即使审计失败，也不会反向打断主业务链路，这是后续从同步落库演进到异步事件化的前提
+- `details_json` 第一版即预留为可扩展字段，但当前仍保持轻量，只写必要的业务上下文，不提前设计复杂差异模型
+- `target_id` 目前使用字符串而非纯数值，优先兼容未来可能出现的复合标识或非数值目标对象
+
+**验证**：
+- `mvn -pl backend test`
+- `npm run build`
+- `mvn -pl backend spring-boot:run`
+- `GET http://localhost:8080/actuator/health` 返回 `UP`
+- `POST http://localhost:8080/api/auth/login` 返回成功，并写入 `AUTH_LOGIN` 审计事件
+- `POST http://127.0.0.1:5173/api/auth/login` 通过 Vite 代理联调成功
+- 使用本机 `psql` 只读查询 PostgreSQL，确认 `operation_logs` 中存在刚写入的 `AUTH_LOGIN|pkb-admin|USER|1|true|<requestId>` 记录
+
+**验证缺口 / 阻塞**：
+- 当前环境无法通过 `ssh root@192.168.106.130` 进入 CentOS，返回 `Permission denied (publickey,...)`
+- 因此本次尚未完成“服务器本地执行 `G2__seed_operation_logs.sql`”这一步验证，后续在具备服务器登录态后补做
+
+**遗留/Next**：
+- 为 A2-A5 的新增/编辑/删除/关联确认方法逐步挂接 `@AuditOperation`
+- 视后续需求决定是否把失败安全事件单独建模，避免和业务审计混表
+- 在拿到 CentOS SSH 登录态后，补做 `G2__seed_operation_logs.sql` 的服务器本地导入与验证

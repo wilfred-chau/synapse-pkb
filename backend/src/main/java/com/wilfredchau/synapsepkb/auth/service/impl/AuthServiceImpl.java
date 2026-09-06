@@ -3,9 +3,11 @@ package com.wilfredchau.synapsepkb.auth.service.impl;
 import com.wilfredchau.synapsepkb.auth.model.dto.LoginRequest;
 import com.wilfredchau.synapsepkb.auth.model.vo.AuthResponse;
 import com.wilfredchau.synapsepkb.auth.model.vo.CurrentUserResponse;
+import com.wilfredchau.synapsepkb.auth.service.audit.AuthLoginAuditCustomizer;
 import com.wilfredchau.synapsepkb.auth.service.AuthService;
 import com.wilfredchau.synapsepkb.common.api.CommonErrorCode;
 import com.wilfredchau.synapsepkb.common.exception.BusinessException;
+import com.wilfredchau.synapsepkb.operationlog.annotation.AuditOperation;
 import com.wilfredchau.synapsepkb.security.AuthenticatedUser;
 import com.wilfredchau.synapsepkb.security.JwtService;
 import com.wilfredchau.synapsepkb.user.entity.PkbUser;
@@ -34,6 +36,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @AuditOperation(
+            action = "AUTH_LOGIN",
+            targetType = "USER",
+            message = "User logged in successfully",
+            customizer = AuthLoginAuditCustomizer.class)
     public AuthResponse login(LoginRequest request) {
         PkbUser user = pkbUserService.findByUsername(request.username())
                 .filter(PkbUser::isEnabled)

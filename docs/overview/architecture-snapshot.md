@@ -25,7 +25,7 @@
 - 鉴权 / 权限：A1 已落地单用户模式的 JWT 本地登录，后端提供 `/api/auth/login` 与 `/api/auth/me`；前端已具备登录页、token 持久化和受保护应用壳。数据库当前已建立 `pkb_users` 作为单用户基线，后续业务表按该用户上下文补齐 `user_id` 字段与索引。
 - API 契约：后端业务接口统一返回 `ApiResponse<T>` 包裹结构，包含 `success`、`data`、`error`、`requestId`、`timestamp`；其中 `error.code` 已升级为统一错误码体系骨架，按公共错误码枚举输出稳定字符串值，前端继续通过 `api.ts` 解包响应、处理 401 和标准错误消息，后续新增接口默认复用该契约。
 - 异常处理：后端已补齐全局异常处理，并新增 `BusinessException` 作为业务异常骨架，统一覆盖参数校验失败、认证失败、常见 `ResponseStatusException` 与兜底系统异常；认证层返回也统一为 JSON 错误体，当前已区分未登录、无效 token、无权限、错误凭据等基础错误码，不再出现默认白页或散乱格式。
-- 日志 / 审计：当前已具备请求链路日志，自动输出 `requestId`、方法、路径、状态码和耗时，并在开发环境输出更细的 debug 日志；后续再通过 `operation_logs` 记录条目编辑、删除、关联确认等关键行为。部署与服务变更单独记录在 `../deploy/server-inventory.md` 与 `../deploy/DEPLOYMENT.md`。
+- 日志 / 审计：当前已具备请求链路日志，自动输出 `requestId`、方法、路径、状态码和耗时，并在开发环境输出更细的 debug 日志；同时已落地 `operation_logs` 审计骨架，通过 `@AuditOperation + AOP` 在 Service 层记录关键业务事件。第一版先打通登录成功样板，并预留 `details_json` 与 customizer 扩展位，后续条目编辑、删除、关联确认等动作可继续按同一模式接入。部署与服务变更单独记录在 `../deploy/server-inventory.md` 与 `../deploy/DEPLOYMENT.md`。
 - 分层约定：后端当前采用“按业务域分包，域内显式分层”的结构；以 `auth`、`user` 等业务域为边界，在域内明确拆分 `controller`、`service`、`mapper`、`entity`、`model/dto`、`model/vo` 等目录，避免后续模块继续混放控制层、业务层和持久层代码。
 - 任务调度：关联计算与批量任务走 `Spring @Scheduled + Redis`，避免阻塞录入链路。
 - 部署约定：目标环境为单机 CentOS Stream 9；当前已确认可复用 Java 17、Maven、Node 18、Redis、Nginx、MySQL、Jenkins、Nacos，且已补齐 Docker Engine / Docker Compose / PostgreSQL 16 / pgvector / python3-pip。
