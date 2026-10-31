@@ -2,17 +2,18 @@
   "task_id": "TASK-20261101-A2-TAGS",
   "title": "A2 非 AI 分类与标签管理",
   "level": "L4",
-  "stage": "方案确认中",
-  "ticket_key": null,
+  "stage": "已确认待建票",
+  "ticket_key": "SPKB-9",
   "plan_path": "docs/plans-local/2026-11-01-a2-tags/plan.md",
   "affected_modules": [],
   "completed_steps": [
-    "完成 Git 与代码核对，正式设计记录方案边界、事务审计及验证矩阵"
+    "完成 Git 与代码核对，正式设计记录方案边界、事务审计及验证矩阵",
+    "2026-11-01 用户批准 D1-D6；Jira 全量可见工单查重无匹配；确认草稿后创建 SPKB-9，标题描述回读完全一致"
   ],
-  "current_step": "代码与文档核对及正式设计已完成，等待 D1-D6 决策",
+  "current_step": "工单前置门：D1-D6 与草稿已批准，SPKB-9 已创建并回读验证；待开发前工单确认",
   "blockers": [],
-  "next_step": "用户确认方案后执行 Jira 查重及工单确认，不提前实现",
+  "next_step": "用户确认 SPKB-9 后进入开发中，先加固事务审计及敏感日志；不得重复建票",
   "key_files": [],
   "created_at": "2026-11-01T01:48:20+08:00",
-  "updated_at": "2026-11-01T01:51:35+08:00"
+  "updated_at": "2026-11-01T01:58:48+08:00"
 }
