@@ -1,6 +1,6 @@
 # A2 分类与标签管理设计
 
-> 日期：2026-11-01。状态：D1–D6 已获用户确认，SPKB-9 已创建，待开发前工单确认；未开始实现或执行数据库变更。
+> 日期：2026-11-01。状态：SPKB-9 非 AI 管理闭环已实现并验证，A2 仍部分完成；执行证据见 [A2 验证记录](../qa/a2-verification.md)。
 > 任务：TASK-20261101-A2-TAGS（L4）。本轮仅覆盖 A2 非 AI 管理闭环。
 > 需求依据：`../requirements/requirements-full.md` 第 2、3、4、5、6、11、12 节。
 
@@ -138,7 +138,7 @@ A5 引入关联后，同一事务中锁标签 → 将源关联插入目标（`ON
 
 ## 8. 成功审计与事务 D5（已确认）
 
-### 当前骨架的实际限制
+### 开工时骨架的实际限制（已按下述方案加固）
 
 `AuditOperationAspect` 在 `joinPoint.proceed()` 返回后立刻调用 `OperationLogService.create`，无显式 advisor 顺序、无提交回调；写入 Service 也没有独立事务声明。
 
@@ -161,6 +161,10 @@ A5 引入关联后，同一事务中锁标签 → 将源关联插入目标（`ON
 若要求审计零丢失，需要事务 outbox 与重试，其写入仍与主事务耦合且增加运维复杂度；本轮不引入。若要求审计绝不增加响应等待，需另行确认有界异步投递及其丢失边界。
 
 本轮支持 REQUIRED 标签事务及真实外层事务回滚，不声明支持 NESTED/savepoint 部分回滚审计。出现该传播方式时必须重新设计与测试。
+
+实际落点：事务 advisor order=100，审计 aspect order=200；draft 拷贝后注册提交回调，writer 使用 REQUIRES_NEW/3 秒事务超时，连接池获取超时 3 秒。标签写事务与 XML 行锁设置 5 秒超时，数据库异常在事务代理退出并回滚后由标签域异常处理器转换为统一错误响应，只按 PG 约束名识别重名，不解析包含值的 SQL 错误消息。PostgreSQL 驱动调整为编译依赖以读取真实 `PSQLException` 元数据。
+
+重命名 VO 为 `{tag, changed}`，合并 VO 为 `{sourceTagId, targetTag}`；服务返回的旧名/源名仅作为 customizer 快照输入，以 `@JsonIgnore` 排除在 HTTP 响应之外。没有引入全请求体审计或通用事件框架。
 
 依据：已对本地实际 Spring 6.1.13 jar 使用 javap 核实 TransactionSynchronization、TransactionSynchronizationManager、EnableTransactionManagement.order，以及 AbstractPlatformTransactionManager 的 doCommit → afterCommit 顺序；官方文档明确提交后写入须 REQUIRES_NEW 且回调异常可传播。
 
@@ -194,11 +198,13 @@ A5 引入关联后，同一事务中锁标签 → 将源关联插入目标（`ON
 
 本机 IDEA 后端启动检查采用关闭 Flyway、禁用 bootstrap 的只读模式连接已迁移数据库，仅验证健康、分类/标签查询；带写入的登录审计与管理动作走服务器后端。当前 bootstrap 无开关且每次启动更新用户，需要仅新增一个 enabled 开关，默认行为不变，并用只读数据库账号作安全兜底；Vite 代理目标改为可配置且保留 localhost:8080 默认值。以上均属于验证所需的有限基础改动，不改登录协议。
 
+实施补记：bootstrap 开关和代理配置均已落地；本轮本机启动以 JDBC `options=-c default_transaction_read_only=on`（URL 编码）强制数据库会话只读，未新增角色/授权。独立只读账号作为长期部署加固项保留，不把会话参数声称为数据库角色权限隔离。实际所有写测试及业务库升级均在 CentOS 进程完成。
+
 当前 H2 不足以验证 PG NFC/生成列/锁/事务失败行为。推荐保留明确标记的 A1 H2 冒烟（迁移目标 V2，仅限测试配置），本机运行纯 Java/Mock 测试；PG16 全迁移与数据库集成测试单独 profile，在 CentOS 的隔离测试库执行。不能把 H2 通过当作 A2 数据层验收；若全迁移无法运行则数据库验收未完成。隔离测试库创建也属于 DDL，先说明再确认。
 
 执行任何 DDL 前展示完整 SQL、目标库/版本、影响对象及数据保护/恢复办法，用户确认后才在服务器本地执行；方案批准不是对未知 SQL 的执行授权。V1/V2 不改写。普通种子 DML 按项目既有授权执行并验证，测试故障仅注入隔离测试库，不破坏实际审计表。读取优先数据库 MCP；当前会话未提供 PostgreSQL MCP，执行时按项目既有 psql 只读路径降级，凭据只从本地受忽略配置读取。
 
-## 11. 验证矩阵（均待执行）
+## 11. 验证矩阵（本轮非 AI 项已执行，证据见验证记录）
 
 | 验证面 | 必须验证的结果 |
 | --- | --- |

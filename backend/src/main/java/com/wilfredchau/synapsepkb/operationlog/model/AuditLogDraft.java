@@ -14,6 +14,31 @@ public class AuditLogDraft {
     private String message;
     private String detailsJson;
     private OffsetDateTime occurredAt;
+    private boolean skipped;
+
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+    public void skip() {
+        skipped = true;
+    }
+
+    public AuditLogDraft snapshot() {
+        AuditLogDraft copy = new AuditLogDraft();
+        copy.actorUserId = actorUserId;
+        copy.actorUsername = actorUsername;
+        copy.action = action;
+        copy.targetType = targetType;
+        copy.targetId = targetId;
+        copy.requestId = requestId;
+        copy.success = success;
+        copy.message = message;
+        copy.detailsJson = detailsJson;
+        copy.occurredAt = occurredAt;
+        copy.skipped = skipped;
+        return copy;
+    }
 
     public Long getActorUserId() {
         return actorUserId;

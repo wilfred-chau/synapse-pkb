@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Descriptions, Layout, Space, Spin, Tag, Typography } from 'antd';
+import { Button, Card, Descriptions, Layout, Space, Spin, Tabs, Tag, Typography } from 'antd';
 import LoginPage from './LoginPage';
+import TagManager from './TagManager';
 import { ApiClientError } from './api';
 import { fetchCurrentUser, hasStoredToken, login, logout, type CurrentUser } from './auth';
 
@@ -85,47 +86,36 @@ function App() {
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fa' }}>
-      <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#101828' }}>
-        <Space size="middle">
+      <Header style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: '12px 16px', height: 'auto',
+        minHeight: 64, alignItems: 'center', justifyContent: 'space-between', background: '#101828' }}>
+        <Space size="middle" wrap>
           <Title level={3} style={{ margin: 0, color: '#fff' }}>
             Synapse PKB
           </Title>
-          <Tag color="blue">A1 Ready</Tag>
+          <Tag color="blue">个人知识库</Tag>
         </Space>
         <Button onClick={handleLogout}>退出登录</Button>
       </Header>
-      <Content style={{ padding: 32 }}>
+      <Content style={{ padding: 16 }}>
         <Space direction="vertical" size={24} style={{ width: '100%' }}>
           <div>
             <Title level={2}>个人空间</Title>
             <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-              当前已完成 A1 的单用户认证闭环，后续业务查询会基于该用户上下文继续扩展。
+              管理自己的分类与标签，逐步整理个人知识。
             </Paragraph>
           </div>
 
-          <Card title="当前登录用户">
+          <Tabs defaultActiveKey="tags" items={[
+            { key: 'tags', label: '分类与标签', children: <TagManager /> },
+            { key: 'account', label: '当前用户', children: <Card title="当前登录用户">
             <Descriptions column={1} bordered>
               <Descriptions.Item label="用户 ID">{currentUser.id}</Descriptions.Item>
               <Descriptions.Item label="用户名">{currentUser.username}</Descriptions.Item>
               <Descriptions.Item label="显示名称">{currentUser.displayName}</Descriptions.Item>
               <Descriptions.Item label="空间标识">{currentUser.spaceKey}</Descriptions.Item>
             </Descriptions>
-          </Card>
-
-          <Alert
-            type="info"
-            showIcon
-            message="数据库基线已预留"
-            description="A1 已引入用户表和固定 user 上下文，后续 entries、relations 等业务表落地时将按该基线补齐 user_id 字段与索引。"
-          />
-
-          <Card title="下一步衔接">
-            <Space direction="vertical" size={8}>
-              <Text>1. 在 A2/A5 阶段为业务表补齐 user_id 字段与索引。</Text>
-              <Text>2. 在统一录入与 CRUD 模块里接入当前用户过滤。</Text>
-              <Text>3. 后续可在不推翻 A1 的前提下扩展为多用户模式。</Text>
-            </Space>
-          </Card>
+          </Card> }
+          ]} />
         </Space>
       </Content>
     </Layout>

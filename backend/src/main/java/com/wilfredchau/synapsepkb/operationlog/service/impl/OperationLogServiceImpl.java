@@ -6,6 +6,8 @@ import com.wilfredchau.synapsepkb.operationlog.model.AuditLogDraft;
 import com.wilfredchau.synapsepkb.operationlog.service.OperationLogService;
 import java.time.OffsetDateTime;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OperationLogServiceImpl implements OperationLogService {
@@ -17,6 +19,7 @@ public class OperationLogServiceImpl implements OperationLogService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 3)
     public OperationLog create(AuditLogDraft draft) {
         OperationLog operationLog = new OperationLog();
         operationLog.setActorUserId(draft.getActorUserId());

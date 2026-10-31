@@ -42,7 +42,7 @@ class SynapsePkbApplicationTests {
                         .content("""
                                 {
                                   "username": "pkb-admin",
-                                  "password": "Password123!"
+                                  "password": "FixtureOnly-Login-2026!"
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -63,7 +63,7 @@ class SynapsePkbApplicationTests {
                         .content("""
                                 {
                                   "username": "pkb-admin",
-                                  "password": "Password123!"
+                                  "password": "FixtureOnly-Login-2026!"
                                 }
                                 """))
                 .andExpect(status().isOk());
@@ -108,7 +108,7 @@ class SynapsePkbApplicationTests {
                         .content("""
                                 {
                                   "username": "",
-                                  "password": "Password123!"
+                                  "password": "FixtureOnly-Login-2026!"
                                 }
                                 """))
                 .andExpect(status().isBadRequest())
@@ -141,7 +141,7 @@ class SynapsePkbApplicationTests {
                         .content("""
                                 {
                                   "username": "pkb-admin",
-                                  "password": "Password123!"
+                                  "password": "FixtureOnly-Login-2026!"
                                 }
                                 """))
                 .andExpect(status().isOk())

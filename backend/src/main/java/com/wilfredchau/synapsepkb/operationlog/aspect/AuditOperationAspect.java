@@ -20,15 +20,19 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Aspect
 @Component
+@Order(200)
 public class AuditOperationAspect {
 
     private static final Logger log = LoggerFactory.getLogger(AuditOperationAspect.class);
@@ -53,16 +57,39 @@ public class AuditOperationAspect {
         try {
             AuditLogDraft draft = buildDefaultDraft(joinPoint, auditOperation, result);
             resolveCustomizer(auditOperation).customize(draft, buildContext(joinPoint, auditOperation, result));
-            operationLogService.create(draft);
+            if (!draft.isSkipped()) {
+                AuditLogDraft snapshot = draft.snapshot();
+                if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                    // The transaction advisor must wrap this aspect. Never write before commit.
+                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            writeSafely(snapshot, auditOperation.action());
+                        }
+                    });
+                } else {
+                    writeSafely(snapshot, auditOperation.action());
+                }
+            }
         } catch (Exception ex) {
-            log.warn("Audit operation logging failed: action={}, method={}, reason={}",
+            log.warn("Audit preparation failed: action={}, method={}, requestId={}, errorType={}",
                     auditOperation.action(),
                     joinPoint.getSignature().toShortString(),
-                    ex.getMessage(),
-                    ex);
+                    resolveRequestId(),
+                    ex.getClass().getSimpleName());
         }
 
         return result;
+    }
+
+    private void writeSafely(AuditLogDraft snapshot, String action) {
+        try {
+            operationLogService.create(snapshot);
+        } catch (Exception ex) {
+            // afterCommit exceptions otherwise escape even though the business transaction committed.
+            log.warn("Audit write failed: action={}, requestId={}, errorType={}",
+                    action, snapshot.getRequestId(), ex.getClass().getSimpleName());
+        }
     }
 
     private AuditLogDraft buildDefaultDraft(

@@ -7,6 +7,8 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    # H2 is only the A1 smoke baseline, not an A2 PostgreSQL substitute.
+    target: "2"
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -17,11 +19,11 @@ app:
   cors:
     allowed-origins: http://localhost:5173
   security:
-    jwt-secret: 12345678901234567890123456789012
+    jwt-secret: fixture-only-jwt-signing-key-not-for-deployment
     jwt-expiration-minutes: 720
     bootstrap-user:
       username: pkb-admin
-      password: Password123!
+      password: FixtureOnly-Login-2026!
       display-name: Wilfred
       space-key: personal-space
 
@@ -29,4 +31,4 @@ logging:
   pattern:
     level: "%5p [%X{requestId:-}]"
   level:
-    com.wilfredchau.synapsepkb: DEBUG
+    com.wilfredchau.synapsepkb: INFO

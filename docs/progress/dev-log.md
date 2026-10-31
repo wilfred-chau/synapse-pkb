@@ -321,7 +321,7 @@ _(暂无轮转卷)_
 - 在 CentOS 服务器本地启动 A1 后端，连接 `synapse_pkb` 执行 Flyway 迁移
 - 在 CentOS 服务器本地导入种子 SQL：`backend/src/main/resources/db/seed/A1__seed_pkb_users.sql`
 - 远程校验 `flyway_schema_history` 与 `pkb_users` 数据已落库
-- 调用 `http://192.168.106.130:18081/api/auth/login` 验证种子用户 `pkb-admin / Password123!` 可成功登录
+- 调用 `http://192.168.106.130:18081/api/auth/login` 验证种子用户 `pkb-admin / [REDACTED: use local configuration]` 可成功登录
 
 **遗留/Next**：
 - 后续在 A2/A5 的业务表中补齐 `user_id` 字段、索引和按当前用户过滤查询
@@ -571,3 +571,42 @@ _(暂无轮转卷)_
 **遗留/Next**：
 - 等待用户确认 SPKB-9 后开始开发，不重复建票；票据状态由用户手动流转
 - 按已批准顺序先加固事务审计和敏感日志，再开发标签闭环；具体 DDL 执行前仍需展示 SQL 与影响范围并确认
+
+## 2026-11-01｜SPKB-9 A2 非 AI 分类标签管理闭环
+
+**背景**：用户确认 SPKB-9 开发，并在展示完整 SQL 与影响范围后批准隔离库验证及验证通过后的业务库升级；沿用 D1–D6，不扩展 A3/A5 或 AI 实现。
+
+**产出**：
+- category 枚举/VO/查询接口提供固定五类；tag 域完成本人标签列表、创建、重命名、合并，明确域内 controller/service/impl/mapper/entity/model 分层
+- V3 创建 tags、NFC/空白规范化函数、生成判重键、CHECK/唯一键/外键；G3 为隔离测试库提供两位禁用用户和 10 条合理中文/英文标签
+- TagName 规范化 1–32 Unicode 码点，ASCII 大小写判重由数据库最终裁决；所有标签查询与写入按认证用户过滤，合并单事务、有序行锁、删除源保留目标，重复请求 404
+- 前端新增分类标签页签、创建/重命名/合并弹窗、搜索、刷新、空态/失败/401 处理，明确未接入统计与 AI
+- 审计升级为事务提交后独立写入，新增 TAG_CREATE/TAG_RENAME/TAG_MERGE，保持 AUTH_LOGIN；移除敏感调试日志，详见 BUG-003/004
+- 增加 bootstrap 开关、可配置 Vite 代理、PG 集成测试 profile 和 Playwright 真链路用例；正式设计及 [验证记录](../qa/a2-verification.md)包含完整边界/执行证据/复跑入口
+
+**过程要点（踩坑与决策）**：
+- 开工 HEAD adfba6b 与远端一致、工作区干净；复用 SPKB-9，未重新建票或自动流转 Jira
+- H2 仅保留 V2 基线；真实 V3、行锁、提交失败与数据库约束全部在 CentOS PG16 验证，不将 Mock/H2 作为 A2 数据层验收
+- PostgreSQL 驱动作为编译依赖读取真实异常元数据，仅按指定唯一键识别重名，不解析带业务值的错误消息
+- SSH stdin 需要无 BOM UTF-8 并处理 CRLF；首轮包装脚本非零退出但 Maven 实际成功，修正后完整复跑通过
+- Windows 正在运行的 target JAR 会阻止 repackage；停止本轮自检进程后重新 verify 成功。没有通过跳过测试绕过问题
+- 本机只读自检使用数据库会话只读参数，未创建独立只读账号；账号最小权限作为正式部署加固项，已如实记录
+
+**验证**：
+- 本地 Java 17.0.14 `mvn -pl backend verify`：27 tests，0 failed/error/skipped，最终打包成功
+- CentOS Java 17.0.16 / PG16.15：全迁移成功，最终 10 项 PG 集成用例全部通过，包括隔离、重名/重命名冲突、并发反向合并、锁超时、外层回滚、真实提交失败、审计 SQL 失败及被锁超时不破坏业务
+- 前端 `npm run build` 通过，Playwright Edge 真实页面闭环最后一次通过；检查桌面/390px 窄屏、刷新持久化、完整 console args 无密码/token、无 pageerror。401 展示用例为显式模拟，其余管理写请求为真实后端
+- 服务器 G3 导入 2 位禁用种子用户/10 条标签；业务库先备份 `/home/chau/spkb9-before-v3-20261101.dump`（600，pg_restore -l 可读），再 Flyway V2→V3，核验全部约束及历史成功
+- 升级后服务器真实登录审计成功；本机只读后端健康 UP，me/分类/标签查询通过。业务库 tags=0，无测试数据污染
+- 临时后端、Vite、SSH 转发均停止；测试库、受限测试目录与备份保留。未执行 git add/commit/push
+
+**遗留/Next**：
+- 本轮非 AI 管理闭环完成，A2 仍部分完成；AI 3–5 候选及采纳/修改待内容处理模块，entry_tags/条目关联迁移与有效使用统计待 A5，未提前实现或宣称已验证
+- 审计为提交后尽力写入，可能故障/宕机漏记；零丢失或 NESTED/savepoint 支持需要另行设计
+- 正式部署、独立最小权限账号及备份恢复演练未完成；前端约 843KB 主包仍有 Vite 体积提示，不阻断本轮构建
+
+**安全收尾补记（同次任务）**：
+- 凭据扫描发现实际认证复用了历史测试默认值及旧日志口令，用户明确批准立即轮换；详见 BUG-005
+- 安全生成新实际口令/JWT 密钥，仅更新受忽略的 `.env.local`；CentOS bootstrap 更新实际用户口令，新服务加载新签名密钥。测试 YAML/A1 测试改用独立仅测试值，旧日志敏感值脱敏
+- 验证新口令/新 token 成功，旧口令与旧签名 token 均 401；本机 Java 17 的 27 tests 和新凭据下浏览器管理闭环再次通过，当前凭据扫描 0 命中
+- 应用户希望登录查看的要求，最终保留真实业务库后端 18081、SSH 转发与 Vite 5173；测试后端停止。账号保持不变，密码只引导用户到本机配置读取，不在交付文本中复制

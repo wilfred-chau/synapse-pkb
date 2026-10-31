@@ -70,8 +70,7 @@ http.interceptors.request.use((config) => {
     console.debug('[api] request', {
       method: requestConfig.method,
       url: requestConfig.url,
-      requestId,
-      data: requestConfig.data
+      requestId
     });
   }
 
@@ -89,8 +88,7 @@ http.interceptors.response.use(
         url: response.config.url,
         status: response.status,
         requestId: response.data?.requestId ?? requestConfig.metadata?.requestId ?? null,
-        durationMs,
-        data: response.data
+        durationMs
       });
     }
 
@@ -99,7 +97,11 @@ http.interceptors.response.use(
   (error: AxiosError<ApiEnvelope<never>>) => {
     const normalizedError = normalizeApiError(error);
     if (import.meta.env.DEV) {
-      console.debug('[api] error', normalizedError);
+      console.debug('[api] error', {
+        status: normalizedError.status,
+        code: normalizedError.code,
+        requestId: normalizedError.requestId
+      });
     }
     return Promise.reject(normalizedError);
   }
@@ -143,6 +145,11 @@ export async function getApi<T>(url: string, config?: AxiosRequestConfig) {
 
 export async function postApi<T, TBody = unknown>(url: string, body?: TBody, config?: AxiosRequestConfig) {
   const response = await http.post<ApiEnvelope<T>>(url, body, config);
+  return unwrapApiEnvelope(response.data);
+}
+
+export async function patchApi<T, TBody = unknown>(url: string, body: TBody, config?: AxiosRequestConfig) {
+  const response = await http.patch<ApiEnvelope<T>>(url, body, config);
   return unwrapApiEnvelope(response.data);
 }
 

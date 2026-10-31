@@ -5,10 +5,12 @@ import com.wilfredchau.synapsepkb.user.entity.PkbUser;
 import com.wilfredchau.synapsepkb.user.service.PkbUserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(prefix = "app.security.bootstrap-user", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class UserBootstrapper implements ApplicationRunner {
 
     private final PkbUserService pkbUserService;

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wilfredchau.synapsepkb.tag.mapper.TagMapper">
+    <select id="listOwned" resultType="com.wilfredchau.synapsepkb.tag.entity.Tag">
+        SELECT id, user_id, name, created_at, updated_at
+        FROM tags WHERE user_id = #{userId} ORDER BY name_key, id
+    </select>
+    <select id="lockOwned" resultType="com.wilfredchau.synapsepkb.tag.entity.Tag" timeout="5">
+        SELECT id, user_id, name, created_at, updated_at
+        FROM tags WHERE user_id = #{userId} AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+        ORDER BY id FOR UPDATE
+    </select>
+    <update id="renameOwned" timeout="5">
+        UPDATE tags SET name = #{name}, updated_at = #{updatedAt}
+        WHERE user_id = #{userId} AND id = #{id}
+    </update>
+    <delete id="deleteOwned" timeout="5">
+        DELETE FROM tags WHERE user_id = #{userId} AND id = #{id}
+    </delete>
+</mapper>

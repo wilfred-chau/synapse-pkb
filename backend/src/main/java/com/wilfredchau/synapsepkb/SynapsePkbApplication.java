@@ -6,9 +6,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 @ConfigurationPropertiesScan
+@EnableTransactionManagement(order = 100)
 @MapperScan(basePackages = "com.wilfredchau.synapsepkb", annotationClass = Mapper.class)
 public class SynapsePkbApplication {
 
